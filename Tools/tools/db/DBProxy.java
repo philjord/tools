@@ -1,5 +1,6 @@
 package tools.db;
 
+import java.awt.GridLayout;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -7,12 +8,26 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
+
 import tools.db.query.QueryInsertMultiple;
 import tools.db.query.QueryInsertOrUpdate;
 
 public class DBProxy
 {
+
+	private boolean showExceptions = false;
+
+	private boolean createDBs = false;
+
 	private Connection connection;
+
+	public DBProxy(boolean showExceptions, boolean createDBs)
+	{
+		this.showExceptions = showExceptions;
+		this.createDBs = createDBs;
+	}
 
 	public DBProxy()
 	{
@@ -20,13 +35,13 @@ public class DBProxy
 
 	public boolean connectCS(String fileLocation)
 	{
-		String connectionString = "jdbc:db2j:" + fileLocation;
+		String connectionString = "jdbc:db2j:" + fileLocation + (createDBs ? ";create=true" : "");
 		return connect("com.ibm.db2j.jdbc.DB2jDriver", connectionString);
 	}
 
 	public boolean connectDerby(String fileLocation)
 	{
-		String connectionString = "jdbc:derby:" + fileLocation;
+		String connectionString = "jdbc:derby:" + fileLocation + (createDBs ? ";create=true" : "");
 		return connect("org.apache.derby.jdbc.EmbeddedDriver", connectionString);
 	}
 
@@ -40,6 +55,8 @@ public class DBProxy
 		}
 		catch (ClassNotFoundException e)
 		{
+			if (showExceptions)
+				displayException("", e);
 			e.printStackTrace();
 		}
 
@@ -76,6 +93,8 @@ public class DBProxy
 			else
 			{
 				//otherwise just print it out
+				if (showExceptions)
+					displayException("", e);
 				e.printStackTrace();
 			}
 			return false;
@@ -114,7 +133,11 @@ public class DBProxy
 		// lets make sure exactly one row got affected
 		if (rowsUpdated != 1)
 		{
-			new Exception("Bad number of rows affected! " + rowsUpdated + "for query " + tq.createInsertQuery()).printStackTrace();
+			Exception e = new Exception("Bad number of rows affected! " + rowsUpdated + "for query " + tq.createInsertQuery());
+
+			if (showExceptions)
+				displayException("", e);
+			e.printStackTrace();
 		}
 	}
 
@@ -133,6 +156,9 @@ public class DBProxy
 		}
 		catch (SQLException e)
 		{
+			if (showExceptions)
+				displayException("Error running SQL", e);
+
 			System.out.println("Error running SQL " + executeStatement);
 			e.printStackTrace();
 		}
@@ -149,6 +175,9 @@ public class DBProxy
 		}
 		catch (SQLException e)
 		{
+			if (showExceptions)
+				displayException("Error running SQL", e);
+
 			System.out.println("Error running SQL " + query);
 			e.printStackTrace();
 		}
@@ -163,6 +192,10 @@ public class DBProxy
 		}
 		catch (SQLException e)
 		{
+
+			if (showExceptions)
+				displayException("getMetaData", e);
+
 			e.printStackTrace();
 			return null;
 		}
@@ -174,6 +207,16 @@ public class DBProxy
 	public Connection getConnection()
 	{
 		return connection;
+	}
+
+	private void displayException(String header, Exception e)
+	{
+		JFrame f = new JFrame("Exception output");
+		f.getContentPane().setLayout(new GridLayout(1, 1));
+		f.setSize(600, 200);
+		JTextArea text = new JTextArea(header + "\n" + e.getMessage());
+		f.getContentPane().add(text);
+		f.setVisible(true);
 	}
 
 }
