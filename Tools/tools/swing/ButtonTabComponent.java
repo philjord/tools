@@ -30,6 +30,8 @@ public class ButtonTabComponent extends JPanel
 {
 	private final JTabbedPane pane;
 
+	private JLabel label;
+
 	public ButtonTabComponent(final JTabbedPane pane)
 	{
 		//unset default FlowLayout' gaps
@@ -42,7 +44,7 @@ public class ButtonTabComponent extends JPanel
 		setOpaque(false);
 
 		//make JLabel read titles from JTabbedPane
-		JLabel label = new JLabel()
+		label = new JLabel()
 		{
 			public String getText()
 			{
