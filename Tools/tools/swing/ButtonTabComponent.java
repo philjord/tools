@@ -95,7 +95,23 @@ public class ButtonTabComponent extends JPanel
 			int i = pane.indexOfTabComponent(ButtonTabComponent.this);
 			if (i != -1)
 			{
-				pane.remove(i);
+				// check for EditorComponent and ask questions
+				Component c = pane.getComponentAt(i);
+				if (c instanceof EditorComponent)
+				{
+					EditorComponent editorComponent = (EditorComponent) c;
+					if (editorComponent.needsSaving())
+					{
+						if (editorComponent.attemptClose())
+						{
+							pane.remove(i);
+						}
+					}
+				}
+				else
+				{
+					pane.remove(i);
+				}
 			}
 		}
 
