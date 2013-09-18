@@ -1,6 +1,13 @@
-ESMJ3D
+Tools
 ====
 
-This is the base project containgin cooomon code for each of the 4 TES project for converting the contents of an ESM file 
-into a loadable scene graph and physics sim. On it's own this project does very little, see ElderScrollsExplorer for 
-more information.
+Various tiny tools I've made that are used throughout my projects.
+
+Very little Of interest but possibly
+
+WeakValueHashMap
+SoftValueHashMap
+WeakListnerList
+
+some wing utils in tools.swing
+A simplified littleendian stream reader in tools.io
