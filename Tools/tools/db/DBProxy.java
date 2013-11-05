@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
 import tools.db.query.QueryInsertMultiple;
@@ -80,14 +81,25 @@ public class DBProxy
 
 				if (next != null && next.getErrorCode() == 45000)
 				{
-					// we got a "already connected"		
+					// we got an "already connected"		
 					System.out.println("There is another app already connected, cloudscape is single user");
-					System.out.println("Remember that Websphere in Data Perspective can make connections");
+					System.out.println("Remember that Eclipse in Data Perspective can make connections");
+
+					JOptionPane.showMessageDialog(null, "The database at " + connectionString + " is locked by another process",
+							"DB locked", JOptionPane.ERROR_MESSAGE);
 				}
 				else
 				{
 					// we got a "does not exist"		
-					System.out.println("The DB doesn't exist (use " + connectionString + "create=true;)");
+					System.out.println("The DB doesn't exist at " + connectionString);
+
+					int result = JOptionPane.showConfirmDialog(null, "The DB doesn't exist at " + connectionString
+							+ ". Do you want to create it?", "DB locked", JOptionPane.OK_CANCEL_OPTION);
+
+					if (result == JOptionPane.OK_OPTION)
+					{
+						return connect(driverName, connectionString + ";create=true");
+					}
 				}
 			}
 			else
