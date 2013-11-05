@@ -7,6 +7,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -137,10 +139,10 @@ public class DBProxy
 
 	public void runQuery(QueryInsertOrUpdate tq)
 	{
-		int rowsUpdated = execute(tq.createUpdateQuery());
+		int rowsUpdated = executeUpdate(tq.createUpdateQuery());
 		if (rowsUpdated == 0)
 		{
-			rowsUpdated = execute(tq.createInsertQuery());
+			rowsUpdated = executeUpdate(tq.createInsertQuery());
 		}
 		// lets make sure exactly one row got affected
 		if (rowsUpdated != 1)
@@ -158,13 +160,37 @@ public class DBProxy
 		qim.runInsertQuery(connection);
 	}
 
-	public int execute(String executeStatement)
+	public int executeUpdate(String updateStatement)
+	{
+		try
+		{
+			CallableStatement cs = connection.prepareCall(updateStatement);
+			cs.execute();
+			return cs.getUpdateCount();
+		}
+		catch (SQLException e)
+		{
+			if (showExceptions)
+				displayException("Error running SQL", e);
+
+			System.out.println("Error running SQL " + updateStatement);
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	/**
+	 * 
+	 * @param executeStatement
+	 * @return true for success false for failure
+	 */
+	public boolean execute(String executeStatement)
 	{
 		try
 		{
 			CallableStatement cs = connection.prepareCall(executeStatement);
 			cs.execute();
-			return cs.getUpdateCount();
+			return true;
 		}
 		catch (SQLException e)
 		{
@@ -174,7 +200,7 @@ public class DBProxy
 			System.out.println("Error running SQL " + executeStatement);
 			e.printStackTrace();
 		}
-		return -1;
+		return false;
 	}
 
 	public ResultSet getResults(String query)
@@ -210,6 +236,37 @@ public class DBProxy
 
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public Set<String> getDBTables()
+	{
+		try
+		{
+			Set<String> set = new HashSet<String>();
+			DatabaseMetaData dbmeta = getMetaData();
+			readDBTable(set, dbmeta, "TABLE", null);
+			readDBTable(set, dbmeta, "VIEW", null);
+			return set;
+		}
+		catch (SQLException e)
+		{
+
+			if (showExceptions)
+				displayException("getDBTables", e);
+
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private void readDBTable(Set<String> set, DatabaseMetaData dbmeta, String searchCriteria, String schema) throws SQLException
+	{
+		ResultSet rs = dbmeta.getTables(null, schema, null, new String[]
+		{ searchCriteria });
+		while (rs.next())
+		{
+			set.add(rs.getString("TABLE_NAME").toLowerCase());
 		}
 	}
 
