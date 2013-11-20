@@ -14,7 +14,7 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
-public class FilteringComboBox extends JComboBox<Object>
+public class FilteringComboBox extends JComboBox
 {
 	private FilteringComboBoxModel model = null;
 
@@ -124,7 +124,7 @@ public class FilteringComboBox extends JComboBox<Object>
 	/**
 	 * ComboBoxModel.java	 
 	 */
-	public class FilteringComboBoxModel extends AbstractListModel<Object> implements MutableComboBoxModel<Object>, Serializable
+	public class FilteringComboBoxModel extends AbstractListModel implements MutableComboBoxModel, Serializable
 	{
 
 		private ArrayList<Object> allItems;

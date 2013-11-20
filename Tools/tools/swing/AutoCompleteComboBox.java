@@ -21,7 +21,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
-public class AutoCompleteComboBox extends JComboBox<Object>
+public class AutoCompleteComboBox extends JComboBox
 {
 	private static final Locale[] INSTALLED_LOCALES = Locale.getAvailableLocales();
 
@@ -82,7 +82,7 @@ public class AutoCompleteComboBox extends JComboBox<Object>
 	/**
 	 * ComboBoxModel.java	 
 	 */
-	public class ComboBoxModel extends DefaultComboBoxModel<Object>
+	public class ComboBoxModel extends DefaultComboBoxModel
 	{
 		/**		 
 		 * The TreeSet which holds the combobox's data (ordered no duplicates)
@@ -116,7 +116,7 @@ public class AutoCompleteComboBox extends JComboBox<Object>
 	{
 		private JTextField autoCompleteEditor = null;
 
-		public AutoCompleteEditor(JComboBox<Object> combo, boolean caseSensitive)
+		public AutoCompleteEditor(JComboBox combo, boolean caseSensitive)
 		{
 			super();
 			autoCompleteEditor = new AutoCompleteEditorComponent(combo, caseSensitive);
@@ -137,11 +137,11 @@ public class AutoCompleteComboBox extends JComboBox<Object>
 	 */
 	public class AutoCompleteEditorComponent extends JTextField
 	{
-		JComboBox<Object> combo = null;
+		JComboBox combo = null;
 
 		boolean caseSensitive = false;
 
-		public AutoCompleteEditorComponent(JComboBox<Object> combo, boolean caseSensitive)
+		public AutoCompleteEditorComponent(JComboBox combo, boolean caseSensitive)
 		{
 			super();
 			this.combo = combo;
