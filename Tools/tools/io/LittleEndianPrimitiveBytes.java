@@ -11,33 +11,6 @@ public class LittleEndianPrimitiveBytes
 		return (((b[3] & 0xff) << 24) | ((b[2] & 0xff) << 16) | ((b[1] & 0xff) << 8) | (b[0] & 0xff));
 	}
 
-	public static float toFloat(byte[] b)
-	{
-
-		//System.out.println("1.0 : "+ Integer.toBinaryString(Float.floatToRawIntBits(1.0f)) + " " + Float.floatToRawIntBits(1.0f));
-
-		//0.0 : 0
-		//1.0 : 111111100000000000000000000000 1065353216
-		//-0.0 : 10000000000000000000000000000000 -2147483648
-		//-1.0 : 10111111100000000000000000000000 -1082130432
-
-		//0.99999994 : 111111011111111111111111111111 1065353215
-		//-0.99999994 : 10111111011111111111111111111111 -1082130433
-
-		int i = toInt(b);
-		if (i == 0)
-			return 0f;
-		else if (i == 1065353216)
-			return 1.0f;
-		else if (i == -2147483648)
-			return -0.0f;
-		else if (i == -1082130432)
-			return -1.0f;
-		else
-			return Float.intBitsToFloat(toInt(b));
-
-	}
-
 	public static short toShort(byte[] b)
 	{
 		return (short) (((b[1] & 0xff) << 8) | (b[0] & 0xff));
@@ -195,5 +168,64 @@ public class LittleEndianPrimitiveBytes
 		return new String(buffer);
 	}
 
-	
+	//private static HashMap<Integer, Integer> floatHitCount = new HashMap<Integer, Integer>();
+
+	//private static int c = 0;
+
+	public static float toFloat(byte[] b)
+	{
+
+		//System.out.println("1.0 : "+ Integer.toBinaryString(Float.floatToRawIntBits(1.0f)) + " " + Float.floatToRawIntBits(1.0f));
+
+		int i = toInt(b);
+		// output the top hits, NOTE! no discernable saving from this crap!
+	/*	c++;
+		
+		if (!floatHitCount.containsKey(i))
+			floatHitCount.put(i, 0);
+
+		floatHitCount.put(i, floatHitCount.get(i) + 1);
+
+		if (c % 10000 == 0)
+		{
+			for (Integer key : floatHitCount.keySet())
+			{
+				if (floatHitCount.get(key) > 10000)
+				{
+					System.out.println("key= " + key + " count= " + floatHitCount.get(key) + " f=" + Float.intBitsToFloat(key));
+				}
+			}
+			System.out.println("" + c + "----------------------");
+		}*/
+
+	/*	switch (i)
+		{
+			case (0)://count= 287699
+				return 0f;
+			case (1065353216)://count= 1085445
+				return 1.0f;
+			case (1053345994)://count= 123019
+				return 0.3921569f;
+			case (1056964608)://count= 43501
+				return 0.5f;
+			case (1061734602)://count= 11479 
+				return 0.7843138f;
+			case (-1006632960)://count= 27376 
+				return -512.0f;
+			case (1061158912)://count= 16092 
+				return 0.75f;
+			case (1050253722)://count= 11991 
+				return 0.3f;
+			case (1207959552)://count= 14100 
+				return 131072.0f;
+			case (1048576000)://count= 18146 
+				return 0.25f;
+			case (1058444951)://count= 11001 
+				return 0.5882353f;
+			default:*/
+				return Float.intBitsToFloat(i);
+	//	}
+
+	}
+
 }

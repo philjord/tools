@@ -1,10 +1,11 @@
 package tools.io;
 
-//TODO: bring this and other littel endian together, then wrap with streams
+//TODO: bring this and other little endian together, then wrap with streams
 public class PrimitiveBytes
 {
 	public static float extractFloat(byte[] bytes, int start)
 	{
+		// LittleEndianPrimitiveBytes has lookup table too
 		return Float.intBitsToFloat(((bytes[start + 3] & 0xff) << 24) | ((bytes[start + 2] & 0xff) << 16) | ((bytes[start + 1] & 0xff) << 8)
 				| (bytes[start + 0] & 0xff));
 	}
