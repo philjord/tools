@@ -283,7 +283,7 @@ public class DBProxy
 		JFrame f = new JFrame("Exception output");
 		f.getContentPane().setLayout(new GridLayout(1, 1));
 		f.setSize(600, 200);
-		JTextArea text = new JTextArea(header + "\n" + e.getMessage());
+		JTextArea text = new JTextArea(header + "\n" + e + " " + e.getStackTrace()[0]);
 		f.getContentPane().add(text);
 		f.setVisible(true);
 	}
