@@ -38,7 +38,11 @@ public class DetailsFileChooser extends JFileChooser
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				if (getSelectedFile().isDirectory())
+				if (e.getActionCommand().equals(JFileChooser.CANCEL_SELECTION))
+				{
+					listener.fileSelected(null);
+				}
+				else if (getSelectedFile() != null && getSelectedFile().isDirectory())
 				{
 					File selFile = getSelectedFile();
 					listener.directorySelected(selFile);
@@ -51,6 +55,7 @@ public class DetailsFileChooser extends JFileChooser
 			public void propertyChange(PropertyChangeEvent e)
 			{
 				String prop = e.getPropertyName();
+				System.out.println("prop " + prop);
 				if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop))
 				{
 					File file = (File) e.getNewValue();
@@ -59,6 +64,7 @@ public class DetailsFileChooser extends JFileChooser
 						listener.fileSelected(file);
 					}
 				}
+
 			}
 		});
 
