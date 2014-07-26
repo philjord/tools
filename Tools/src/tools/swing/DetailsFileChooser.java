@@ -54,8 +54,7 @@ public class DetailsFileChooser extends JFileChooser
 		{
 			public void propertyChange(PropertyChangeEvent e)
 			{
-				String prop = e.getPropertyName();
-				System.out.println("prop " + prop);
+				String prop = e.getPropertyName();				
 				if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop))
 				{
 					File file = (File) e.getNewValue();
