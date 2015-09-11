@@ -48,15 +48,16 @@ public class GeneralBootStrap
 		File logErr = new File(errLogFilename);
 		try
 		{
-			Process p = pb.start();
-
 			if (!log.exists())
 				log.getParentFile().mkdirs();
+			if (!logErr.exists())
+				logErr.getParentFile().mkdirs();
+			
+			Process p = pb.start();
+
 			StreamPump streamPump = new StreamPump(p.getInputStream(), log);
 			streamPump.start();
 
-			if (!logErr.exists())
-				logErr.getParentFile().mkdirs();
 			StreamPump streamPumpErr = new StreamPump(p.getErrorStream(), logErr);
 			streamPumpErr.start();
 		}
