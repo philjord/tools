@@ -94,4 +94,20 @@ public class GeneralBootStrap
 		}
 
 	}
+	protected static String getXMX()
+	{
+		String os = System.getProperty("os.arch");
+
+		if (os.indexOf("64") != -1)
+		{
+			return "-Xmx2400m";
+		}
+		else
+		{
+			return "-Xmx1200m";
+		}
+		
+		 
+	}
+	
 }
