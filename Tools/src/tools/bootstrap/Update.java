@@ -1,57 +1,79 @@
-package tools.zip;
+package tools.bootstrap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipInputStream;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.unzip.UnzipUtil;
-import tools.swing.DetailsFileChooser;
 
-@SuppressWarnings("all")
-public class HexPasswordUnzip
+public class Update
 {
+	
+	//TEST values
+	/*String zipfile = "E:\\Java\\installers\\ElderScrollsExplorer\\update\\ElderScrollsExplorer v2.02.zip";//args[0];
+	String unzipPath = "E:\\Java\\installers";//args[1];
+	String rootDirectory = "E:\\Java\\installers\\ElderScrollsExplorer";//args[2];
+	String restartJar = "E:\\Java\\installers\\ElderScrollsExplorer\\ElderScrollsExplorer.jar";//args[3];
+
+	// do the unzip but skip the update.jar file (of course) or ignore error
+
+	ArrayList<File> skipList = new ArrayList<File>();
+	skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
+	skipList.add(new File("E:\\Java\\installers\\ElderScrollsExplorer\\lib\\update.jar"));
+*/
 	private static final int BUFF_SIZE = 4096;
 
-	private static char[] pchars = new char[]
-	{ 0xB7, 0x27, 0x4A, 0x3B, 0xCB, 0xDD, 0x4B, 0xD8, 0xB4, 0xCD, 0x8D, 0xD8, 0x2D, 0x8F, 0x00, 0xDB };
+	public static String ps = System.getProperty("file.separator");
 
-	private static String password = new String(pchars);
+	public static String fs = System.getProperty("path.separator");
 
-	private static Preferences prefs;
-
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
-		prefs = Preferences.userNodeForPackage(HexPasswordUnzip.class);
+		
+		String zipfile = args[0];
+		String unzipPath = args[1];
+		String rootDirectory = args[2];
+		String restartJar = args[3];
 
-		DetailsFileChooser dfc = new DetailsFileChooser(prefs.get("zipfiles", ""), new DetailsFileChooser.Listener()
+		// do the unzip but skip the update.jar file (of course) or ignore error
+
+		ArrayList<File> skipList = new ArrayList<File>();
+		skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
+		
+		if (new File(zipfile).exists())
 		{
-			@Override
-			public void directorySelected(File dir)
-			{
-				prefs.put("HexPasswordUnzip", dir.getAbsolutePath());
-				processDir(dir);
-			}
+			// wait for a moment to ensure callee has closed
+			Thread.sleep(2000);	
+			processFile(new File(zipfile), unzipPath, skipList);
+			Thread.sleep(2000);
+		}				
+		
+		//now restart the callee jar
+		String javaExe = "java";// just call the path version by default
 
-			@Override
-			public void fileSelected(File file)
-			{
-				prefs.put("HexPasswordUnzip", file.getAbsolutePath());
-				System.out.println("Selected file: " + file);
-				processFile(file, file.getAbsolutePath() + ".out");
-			}
-		});
+		//find out if a JRE folder exists, and use it if possible
+		File possibleJreFolder = new File(rootDirectory + "\\jre");
+		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
+		{
+			javaExe = rootDirectory + "\\jre\\bin\\java";
+		}
 
+		ProcessBuilder pb = new ProcessBuilder(javaExe, "-jar", restartJar);
+		pb.start();
+		// wait just a bit longer...
+		Thread.sleep(2000);
+		System.exit(0);
 	}
 
-	public static void processFile(File file, String destinationPath)
+	public static void processFile(File file, String destinationPath, List<File> skipList)
 	{
 
 		ZipInputStream is = null;
@@ -62,16 +84,10 @@ public class HexPasswordUnzip
 			// Initiate the ZipFile
 			ZipFile zipFile = new ZipFile(file);
 
-			// If zip file is password protected then set the password
-			if (zipFile.isEncrypted())
-			{
-				zipFile.setPassword(password);
-			}
-
 			//Get a list of FileHeader. FileHeader is the header information for all the
 			//files in the ZipFile
 
-			List fileHeaderList = zipFile.getFileHeaders();
+			List<?> fileHeaderList = zipFile.getFileHeaders();
 
 			// Loop through all the fileHeaders
 			for (int i = 0; i < fileHeaderList.size(); i++)
@@ -79,10 +95,15 @@ public class HexPasswordUnzip
 				FileHeader fileHeader = (FileHeader) fileHeaderList.get(i);
 				if (fileHeader != null)
 				{
+					
 
 					//Build the output file
 					String outFilePath = destinationPath + System.getProperty("file.separator") + fileHeader.getFileName();
 					File outFile = new File(outFilePath);
+					
+					// skip anything in the skiplist jar 
+					if (skipList.contains(outFile))					
+						continue;
 
 					//Checks if the file is a directory
 					if (fileHeader.isDirectory())
@@ -181,31 +202,4 @@ public class HexPasswordUnzip
 			is = null;
 		}
 	}
-
-	private static void processDir(File dir)
-	{
-		System.out.println("Processing directory " + dir);
-		File[] fs = dir.listFiles();
-		for (int i = 0; i < fs.length; i++)
-		{
-			try
-			{
-				if (fs[i].isDirectory())
-				{
-					processDir(fs[i]);
-				}
-				else
-				{
-					System.out.println("\tFile: " + fs[i]);
-					processFile(fs[i], fs[i].getAbsolutePath() + ".out");
-				}
-
-			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-	}
-
 }
