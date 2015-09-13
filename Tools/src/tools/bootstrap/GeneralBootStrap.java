@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 
@@ -223,8 +224,18 @@ public class GeneralBootStrap
 							if (!currentVersionFileName.equals(downloadFileName))
 							{
 								System.out.println("currentVersionFileName:" + currentVersionFileName + " != downloadFileName");
-								System.out.println("Time to download...");
-								HttpDownloadUtility.downloadFile(downloadUrl, downloadFileName, ".\\update");
+
+								int result = JOptionPane.showConfirmDialog(null, "Do you want to update now?", "Update Availible",
+										JOptionPane.YES_NO_OPTION);
+								if (result == JOptionPane.OK_OPTION)
+								{
+									System.out.println("Time to download...");
+									HttpDownloadUtility.downloadFile(downloadUrl, downloadFileName, ".\\update");
+									System.out.println("Time to restart...");
+									callUpdater();
+									// tell caller to get out of town!
+									return false;
+								}
 							}
 							else
 							{
@@ -235,41 +246,32 @@ public class GeneralBootStrap
 					}
 				}
 			}
-
-		}
-
-		System.out.println("Done");
-
-		int result = JOptionPane.showConfirmDialog(null, "Do you wish to update at all sir?");
-
-		if (result == JOptionPane.OK_OPTION)
-		{
-			String recallJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
-					.getAbsolutePath();
-			String rootDirectory = new File(recallJar).getParentFile().getAbsolutePath();
-			String unzipPath = new File(rootDirectory).getParentFile().getAbsolutePath();
-			String updateZipFile = "ElderScrollsExplorer v2.02.zip";
-			String updateZip = rootDirectory + ps + "update" + ps + updateZipFile;
-
-			String javaExe = "java";// just call the path version by default
-
-			//find out if a JRE folder exists, and use it if possible
-			File possibleJreFolder = new File(rootDirectory + "\\jre");
-			if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
-			{
-				javaExe = rootDirectory + "\\jre\\bin\\java";
-			}
-			String jarpath = "." + ps + "lib" + ps + "update.jar" + fs;
-			ProcessBuilder pb = new ProcessBuilder(javaExe, "-cp", jarpath, "tools.bootstrap.Update", updateZip, unzipPath, rootDirectory,
-					recallJar);
-			pb.start();
-
-			// tell caller to get out of town!
-			return false;
-
 		}
 
 		// all is well continue booting
 		return true;
+	}
+
+	private static void callUpdater() throws URISyntaxException, IOException
+	{
+		String recallJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
+				.getAbsolutePath();
+		String rootDirectory = new File(recallJar).getParentFile().getAbsolutePath();
+		String unzipPath = new File(rootDirectory).getParentFile().getAbsolutePath();
+		String updateZipFile = "ElderScrollsExplorer v2.02.zip";
+		String updateZip = rootDirectory + ps + "update" + ps + updateZipFile;
+
+		String javaExe = "java";// just call the path version by default
+
+		//find out if a JRE folder exists, and use it if possible
+		File possibleJreFolder = new File(rootDirectory + "\\jre");
+		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
+		{
+			javaExe = rootDirectory + "\\jre\\bin\\java";
+		}
+		String jarpath = "." + ps + "lib" + ps + "update.jar" + fs;
+		ProcessBuilder pb = new ProcessBuilder(javaExe, "-cp", jarpath, "tools.bootstrap.Update", updateZip, unzipPath, rootDirectory,
+				recallJar);
+		pb.start();
 	}
 }
