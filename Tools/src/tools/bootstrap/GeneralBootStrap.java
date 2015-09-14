@@ -67,9 +67,10 @@ public class GeneralBootStrap
 			{
 				public void processFinished(Process process)
 				{
-					if (streamPumpErr.getBytesPumped() > 0)
+					// a couple of fixed outputs I can't avoid
+					if (streamPumpErr.getBytesPumped() > 120)
 					{
-						int result = JOptionPane.showConfirmDialog(null, "Maybe error detected, wanna send it to the cloud?",
+						int result = JOptionPane.showConfirmDialog(null, "Some issues occurred during session, send err log to author?",
 								"Error output upload", JOptionPane.YES_NO_OPTION);
 						if (result == JOptionPane.OK_OPTION)
 						{

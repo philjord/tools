@@ -63,6 +63,7 @@ public class ErrorLogUploader
 				ftp.cancelTransfer();
 			}
 		});
+
 	}
 
 	/**
@@ -99,6 +100,5 @@ public class ErrorLogUploader
 			e.printStackTrace();
 		}
 		// just ignore all failures and quietly leave the room
-
 	}
 }
