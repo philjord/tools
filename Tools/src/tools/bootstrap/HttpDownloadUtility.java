@@ -1,5 +1,6 @@
 package tools.bootstrap;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class HttpDownloadUtility
 	 * @param saveDir path of the directory to save the file
 	 * @throws IOException
 	 */
-	public static void downloadFile(String fileURL, String fileName, String saveDir) throws IOException
+	public static void downloadFile(Component parent, String fileURL, String fileName, String saveDir) throws IOException
 	{
 		URL url = new URL(fileURL);
 		HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
@@ -59,7 +60,7 @@ public class HttpDownloadUtility
 
 			// opens input stream from the HTTP connection
 			InputStream inputStream = httpConn.getInputStream();
-			
+
 			//ensure out is good to go
 			File dir = new File(saveDir);
 			if (!dir.exists())
@@ -69,11 +70,10 @@ public class HttpDownloadUtility
 
 			// opens an output stream to save into file
 			FileOutputStream outputStream = new FileOutputStream(saveFilePath);
-			
-			FileDownloadProgressThread progT = new FileDownloadProgressThread(saveFilePath,
-					contentLength, new File(saveFilePath));			
+
+			FileDownloadProgressThread progT = new FileDownloadProgressThread(parent, saveFilePath, contentLength, new File(saveFilePath));
 			progT.start();
-			
+
 			int bytesRead = -1;
 			byte[] buffer = new byte[BUFFER_SIZE];
 			while ((bytesRead = inputStream.read(buffer)) != -1)

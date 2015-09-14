@@ -1,5 +1,6 @@
 package tools.io;
 
+import java.awt.Component;
 import java.io.File;
 
 import javax.swing.ProgressMonitor;
@@ -14,13 +15,13 @@ public class FileDownloadProgressThread extends Thread
 
 	private boolean stop = false;
 
-	public FileDownloadProgressThread(String fileName, long fileStartSize, File destination)
+	public FileDownloadProgressThread(Component parent, String fileName, long fileStartSize, File destination)
 	{
 		this.setDaemon(true);
 		this.setName("Progress thread of download of " + fileName);
 		this.destination = destination;
 		this.fileStartSize = fileStartSize;
-		progressMonitor = new ProgressMonitor(null, "Download progress of " + fileName, "", 0, (int) fileStartSize);
+		progressMonitor = new ProgressMonitor(parent, "Download progress of " + fileName, "", 0, (int) fileStartSize);
 	}
 
 	public void run()

@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import tools.bootstrap.ProcessExitDetector.ProcessListener;
@@ -225,16 +226,24 @@ public class GeneralBootStrap
 							{
 								System.out.println("currentVersionFileName:" + currentVersionFileName + " != downloadFileName");
 
-								int result = JOptionPane.showConfirmDialog(null, "Do you want to update now?", "Update Availible",
+								JFrame f = new JFrame("Updating " + downloadFileName);
+								f.setResizable(false);
+								f.setVisible(true);
+								int result = JOptionPane.showConfirmDialog(f, "Do you want to update now?", "Update Availible",
 										JOptionPane.YES_NO_OPTION);
 								if (result == JOptionPane.OK_OPTION)
 								{
 									System.out.println("Time to download...");
-									HttpDownloadUtility.downloadFile(downloadUrl, downloadFileName, ".\\update");
+									HttpDownloadUtility.downloadFile(f, downloadUrl, downloadFileName, ".\\update");
 									System.out.println("Time to restart...");
 									callUpdater();
 									// tell caller to get out of town!
 									return false;
+								}
+								else
+								{
+									f.setVisible(false);
+									f.dispose();
 								}
 							}
 							else
