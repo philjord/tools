@@ -1,16 +1,9 @@
 package tools.bootstrap;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
 
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import tools.bootstrap.ProcessExitDetector.ProcessListener;
@@ -53,7 +46,7 @@ public class GeneralBootStrap
 	protected static void startProcess(ProcessBuilder pb, String logFilename, String errLogFilename)
 	{
 		File log = new File(logFilename);
-		File logErr = new File(errLogFilename);
+		final File logErr = new File(errLogFilename);
 		try
 		{
 			if (!log.exists())
@@ -66,7 +59,7 @@ public class GeneralBootStrap
 			StreamPump streamPump = new StreamPump(p.getInputStream(), log);
 			streamPump.start();
 
-			StreamPump streamPumpErr = new StreamPump(p.getErrorStream(), logErr);
+			final StreamPump streamPumpErr = new StreamPump(p.getErrorStream(), logErr);
 			streamPumpErr.start();
 
 			ProcessExitDetector processExitDetector = new ProcessExitDetector(p);
@@ -74,6 +67,17 @@ public class GeneralBootStrap
 			{
 				public void processFinished(Process process)
 				{
+					if (streamPumpErr.getBytesPumped() > 0)
+					{
+						int result = JOptionPane.showConfirmDialog(null, "Maybe error detected, wanna send it to the cloud?",
+								"Error output upload", JOptionPane.YES_NO_OPTION);
+						if (result == JOptionPane.OK_OPTION)
+						{
+							ErrorLogUploader errorLogUploader = new ErrorLogUploader(logErr);
+							errorLogUploader.doUpload();// will block
+						}
+					}
+
 					//Mac os x complains if I don't get an exit value TODO: check this works?
 					System.exit(0);
 				}
@@ -130,157 +134,4 @@ public class GeneralBootStrap
 
 	}
 
-	/**
-	 * return true if the boot should continue false if an update needs to happen
-	 * @param downloadLocation 
-	 * @param currentVersion 
-	 * @return
-	 * @throws Exception
-	 */
-	protected static boolean doUpdateFromSourceForge(String currentVersionFileName, String listFilesURL) throws Exception
-	{
-		// taken from response
-		String cookieString = "FreedomCookie=true;path=/;";
-
-		// let's see whats at teh end of the given url shall we
-		URL url = new URL(listFilesURL);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setInstanceFollowRedirects(true);
-		conn.setReadTimeout(5000);
-		conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-		conn.addRequestProperty("User-Agent", "Mozilla");
-		conn.addRequestProperty("Referer", "sourceforge.net");
-		conn.setRequestProperty("Cookie", cookieString);
-
-		System.out.println("Request URL ... " + url);
-
-		boolean redirect = false;
-
-		// normally, 3xx is redirect
-		int status = conn.getResponseCode();
-		if (status != HttpURLConnection.HTTP_OK)
-		{
-			if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM
-					|| status == HttpURLConnection.HTTP_SEE_OTHER)
-				redirect = true;
-		}
-
-		System.out.println("Response Code ... " + status);
-
-		if (redirect)
-		{
-			// get redirect url from "location" header field
-			String newUrl = conn.getHeaderField("Location");
-
-			// get the cookie if need, for login
-			//String cookies = conn.getHeaderField("Set-Cookie");
-
-			// open the new connnection again
-			conn = (HttpURLConnection) new URL(newUrl).openConnection();
-			//conn.setRequestProperty("Cookie", cookies);
-			conn.setRequestProperty("Cookie", cookieString);
-			conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-			conn.addRequestProperty("User-Agent", "Mozilla");
-			conn.addRequestProperty("Referer", "google.com");
-
-			System.out.println("Redirect to URL : " + newUrl);
-		}
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		String inputLine;
-		StringBuffer html = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null)
-		{
-			html.append(inputLine);
-		}
-		in.close();
-
-		String htmlStr = html.toString();
-		System.out.println("URL Content... \n" + htmlStr);
-
-		int directLinkIdx = htmlStr.indexOf("id=\"problems\"");
-		if (directLinkIdx != -1)
-		{
-			String startMaker = "href=\"";
-			int hrefIdx = html.indexOf(startMaker, directLinkIdx);
-			if (hrefIdx != -1)
-			{
-				String endMarker = "\" class=\"direct-download\"";
-				int hrefEndIdx = html.indexOf(endMarker, hrefIdx);
-				if (hrefEndIdx != -1)
-				{
-					String downloadUrl = html.substring(hrefIdx + startMaker.length(), hrefEndIdx);
-					System.out.println("downloadUrl " + downloadUrl);
-					int fileNameStartIdx = downloadUrl.lastIndexOf("/");
-					if (fileNameStartIdx != -1)
-					{
-						int fileNameEndIdx = downloadUrl.indexOf("?r=", fileNameStartIdx);
-						if (fileNameEndIdx != -1)
-						{
-							String downloadFileName = URLDecoder.decode(
-									downloadUrl.substring(fileNameStartIdx + "/".length(), fileNameEndIdx), "UTF-8");
-							System.out.println("downloadFileName " + downloadFileName);
-
-							if (!currentVersionFileName.equals(downloadFileName))
-							{
-								System.out.println("currentVersionFileName:" + currentVersionFileName + " != downloadFileName");
-
-								JFrame f = new JFrame("Updating " + downloadFileName);
-								f.setResizable(false);
-								f.setVisible(true);
-								int result = JOptionPane.showConfirmDialog(f, "Do you want to update now?", "Update Availible",
-										JOptionPane.YES_NO_OPTION);
-								if (result == JOptionPane.OK_OPTION)
-								{
-									System.out.println("Time to download...");
-									HttpDownloadUtility.downloadFile(f, downloadUrl, downloadFileName, ".\\update");
-									System.out.println("Time to restart...");
-									callUpdater();
-									// tell caller to get out of town!
-									return false;
-								}
-								else
-								{
-									f.setVisible(false);
-									f.dispose();
-								}
-							}
-							else
-							{
-								System.out.println("currentVersionFileName:" + currentVersionFileName + " = downloadFileName");
-								System.out.println("No update");
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// all is well continue booting
-		return true;
-	}
-
-	private static void callUpdater() throws URISyntaxException, IOException
-	{
-		String recallJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
-				.getAbsolutePath();
-		String rootDirectory = new File(recallJar).getParentFile().getAbsolutePath();
-		String unzipPath = new File(rootDirectory).getParentFile().getAbsolutePath();
-		String updateZipFile = "ElderScrollsExplorer v2.02.zip";
-		String updateZip = rootDirectory + ps + "update" + ps + updateZipFile;
-
-		String javaExe = "java";// just call the path version by default
-
-		//find out if a JRE folder exists, and use it if possible
-		File possibleJreFolder = new File(rootDirectory + "\\jre");
-		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
-		{
-			javaExe = rootDirectory + "\\jre\\bin\\java";
-		}
-		String jarpath = "." + ps + "lib" + ps + "update.jar" + fs;
-		ProcessBuilder pb = new ProcessBuilder(javaExe, "-cp", jarpath, "tools.bootstrap.Update", updateZip, unzipPath, rootDirectory,
-				recallJar);
-		pb.start();
-	}
 }

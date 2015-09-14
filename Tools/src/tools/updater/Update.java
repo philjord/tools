@@ -1,4 +1,4 @@
-package tools.bootstrap;
+package tools.updater;
 
 import java.io.File;
 import java.io.FileNotFoundException;

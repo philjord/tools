@@ -15,14 +15,21 @@ public class StreamPump extends Thread
 	 * Note IOExceptions, closure of output stream will kill this thread
 	 */
 
-	InputStream is;
+	private InputStream is;
 
-	OutputStream os;
+	private OutputStream os;
+
+	private long bytesPumped = 0;
 
 	public StreamPump(InputStream is, File out) throws FileNotFoundException
 	{
 		this.is = is;
 		this.os = new FileOutputStream(out);
+	}
+
+	public long getBytesPumped()
+	{
+		return bytesPumped;
 	}
 
 	@Override
@@ -41,6 +48,7 @@ public class StreamPump extends Thread
 			{
 				bos.write(buffer, 0, bytesRead);
 				bos.flush();
+				bytesPumped += bytesRead;
 			}
 		}
 		catch (IOException ioe)
