@@ -15,6 +15,8 @@ public class FileDownloadProgressThread extends Thread
 
 	private boolean stop = false;
 
+	private CancelCallBack cancelCallBack = null;
+
 	public FileDownloadProgressThread(Component parent, String fileName, long fileStartSize, File destination)
 	{
 		this.setDaemon(true);
@@ -24,16 +26,26 @@ public class FileDownloadProgressThread extends Thread
 		progressMonitor = new ProgressMonitor(parent, "Download progress of " + fileName, "", 0, (int) fileStartSize);
 	}
 
+	public void setCancelCallBack(CancelCallBack cancelCallBack)
+	{
+		this.cancelCallBack = cancelCallBack;
+	}
+
 	public void run()
 	{
 		while (!stop)
 		{
 			long destLen = destination.length();
 			progressMonitor.setProgress((int) destLen);
-			
+
 			if (destLen >= fileStartSize)
 				stop = true;
-			
+
+			if (cancelCallBack != null && progressMonitor.isCanceled())
+			{
+				cancelCallBack.cancel();
+			}
+
 			try
 			{
 				Thread.sleep(500);
@@ -49,5 +61,10 @@ public class FileDownloadProgressThread extends Thread
 	public void stopNow()
 	{
 		stop = true;
+	}
+
+	public interface CancelCallBack
+	{
+		public void cancel();
 	}
 }
