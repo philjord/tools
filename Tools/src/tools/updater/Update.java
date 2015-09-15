@@ -1,12 +1,13 @@
 package tools.updater;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -16,64 +17,72 @@ import net.lingala.zip4j.unzip.UnzipUtil;
 
 public class Update
 {
-	
-	//TEST values
-	/*String zipfile = "E:\\Java\\installers\\ElderScrollsExplorer\\update\\ElderScrollsExplorer v2.02.zip";//args[0];
-	String unzipPath = "E:\\Java\\installers";//args[1];
-	String rootDirectory = "E:\\Java\\installers\\ElderScrollsExplorer";//args[2];
-	String restartJar = "E:\\Java\\installers\\ElderScrollsExplorer\\ElderScrollsExplorer.jar";//args[3];
-
-	// do the unzip but skip the update.jar file (of course) or ignore error
-
-	ArrayList<File> skipList = new ArrayList<File>();
-	skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
-	skipList.add(new File("E:\\Java\\installers\\ElderScrollsExplorer\\lib\\update.jar"));
-*/
 	private static final int BUFF_SIZE = 4096;
 
 	public static String ps = System.getProperty("file.separator");
 
 	public static String fs = System.getProperty("path.separator");
 
-	public static void main(String[] args) throws Exception
+	//TEST values
+	/*String zipfile = "E:\\Java\\installers\\ElderScrollsExplorer\\update\\ElderScrollsExplorer v2.02.zip";//args[0];
+		String unzipPath = "E:\\Java\\installers";//args[1];
+		String rootDirectory = "E:\\Java\\installers\\ElderScrollsExplorer";//args[2];
+		String restartJar = "E:\\Java\\installers\\ElderScrollsExplorer\\ElderScrollsExplorer.jar";//args[3];
+
+		 
+	*/
+
+	// do the unzip but skip the update.jar file (of course) or ignore error
+	public static void main(String[] args)
 	{
-		
-		String zipfile = args[0];
-		String unzipPath = args[1];
-		String rootDirectory = args[2];
-		String restartJar = args[3];
-
-		// do the unzip but skip the update.jar file (of course) or ignore error
-
-		ArrayList<File> skipList = new ArrayList<File>();
-		skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
-		
-		if (new File(zipfile).exists())
+		try
 		{
-			// wait for a moment to ensure callee has closed
-			Thread.sleep(2000);	
-			processFile(new File(zipfile), unzipPath, skipList);
-			Thread.sleep(2000);
-		}				
-		
-		//now restart the callee jar
-		String javaExe = "java";// just call the path version by default
+			String zipfile = args[0];
+			String unzipPath = args[1];
+			String rootDirectory = args[2];
+			String restartJar = args[3];
 
-		//find out if a JRE folder exists, and use it if possible
-		File possibleJreFolder = new File(rootDirectory + "\\jre");
-		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
-		{
-			javaExe = rootDirectory + "\\jre\\bin\\java";
+			// do the unzip but skip the update.jar file (of course) or ignore error
+
+			ArrayList<File> skipList = new ArrayList<File>();
+			skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
+
+			File zf = new File(zipfile);
+			if (zf.exists())
+			{
+				// wait for a moment to ensure callee has closed
+				Thread.sleep(2000);
+				processFile(zf, unzipPath, skipList);
+				Thread.sleep(500);
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "Update file des not exist? " + zf.getAbsolutePath());
+			}
+
+			//now restart the callee jar
+			String javaExe = "java";// just call the path version by default
+
+			//find out if a JRE folder exists, and use it if possible
+			File possibleJreFolder = new File(rootDirectory + "\\jre");
+			if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
+			{
+				javaExe = rootDirectory + "\\jre\\bin\\java";
+			}
+
+			ProcessBuilder pb = new ProcessBuilder(javaExe, "-jar", restartJar);
+			pb.start();
+			// wait just a bit longer...
+			Thread.sleep(500);
+			System.exit(0);
 		}
-
-		ProcessBuilder pb = new ProcessBuilder(javaExe, "-jar", restartJar);
-		pb.start();
-		// wait just a bit longer...
-		Thread.sleep(2000);
-		System.exit(0);
+		catch (Exception e)
+		{
+			JOptionPane.showMessageDialog(null, e);
+		}
 	}
 
-	public static void processFile(File file, String destinationPath, List<File> skipList)
+	public static void processFile(File file, String destinationPath, List<File> skipList) throws IOException, ZipException
 	{
 
 		ZipInputStream is = null;
@@ -95,14 +104,13 @@ public class Update
 				FileHeader fileHeader = (FileHeader) fileHeaderList.get(i);
 				if (fileHeader != null)
 				{
-					
 
 					//Build the output file
 					String outFilePath = destinationPath + System.getProperty("file.separator") + fileHeader.getFileName();
 					File outFile = new File(outFilePath);
-					
+
 					// skip anything in the skiplist jar 
-					if (skipList.contains(outFile))					
+					if (skipList.contains(outFile))
 						continue;
 
 					//Checks if the file is a directory
@@ -152,32 +160,11 @@ public class Update
 				}
 			}
 		}
-		catch (ZipException e)
-		{
-			e.printStackTrace();
-		}
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 		finally
 		{
-			try
-			{
-				closeFileHandlers(is, os);
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+
+			closeFileHandlers(is, os);
+
 		}
 	}
 

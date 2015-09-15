@@ -182,11 +182,17 @@ public class SourceForgeUpdater
 											f.getContentPane().doLayout();
 											f.getContentPane().repaint();
 											System.out.println("Time to download...");
+											String recallJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource()
+													.getLocation().toURI().getPath()).getAbsolutePath();// this is the main jar (to call back)
+											String rootDirectory = new File(recallJar).getParentFile().getAbsolutePath();// this is where the main jar lives (it has a lib below it)
+											String unzipPath = new File(rootDirectory).getParentFile().getAbsolutePath();// the zip file has the root folder in it
+											String updateFolder = rootDirectory + ps + "update";// download to here
+
 											HttpDownloadUtility httpDownloadUtility = new HttpDownloadUtility();
-											if (httpDownloadUtility.downloadFile(f, downloadUrl, downloadFileName, ".\\update"))
+											if (httpDownloadUtility.downloadFile(f, downloadUrl, downloadFileName, updateFolder))
 											{
 												System.out.println("Time to restart...");
-												callUpdater();
+												callUpdater(updateFolder + ps + downloadFileName, unzipPath, rootDirectory, recallJar);
 
 												f.setVisible(false);
 												f.dispose();
@@ -229,14 +235,8 @@ public class SourceForgeUpdater
 		return true;
 	}
 
-	private static void callUpdater() throws URISyntaxException, IOException
+	private static void callUpdater(String updateZip, String unzipPath, String rootDirectory, String recallJar) throws IOException
 	{
-		String recallJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
-				.getAbsolutePath();
-		String rootDirectory = new File(recallJar).getParentFile().getAbsolutePath();
-		String unzipPath = new File(rootDirectory).getParentFile().getAbsolutePath();
-		String updateZipFile = "ElderScrollsExplorer v2.02.zip";
-		String updateZip = rootDirectory + ps + "update" + ps + updateZipFile;
 
 		String javaExe = "java";// just call the path version by default
 
@@ -250,5 +250,12 @@ public class SourceForgeUpdater
 		ProcessBuilder pb = new ProcessBuilder(javaExe, "-cp", jarpath, "tools.updater.Update", updateZip, unzipPath, rootDirectory,
 				recallJar);
 		pb.start();
+		System.out.println("Called " + javaExe);
+		System.out.println("jarpath " + jarpath);
+		System.out.println("tools.updater.Update ");
+		System.out.println("updateZip " + updateZip);
+		System.out.println("unzipPath " + unzipPath);
+		System.out.println("rootDirectory " + rootDirectory);
+		System.out.println("recallJar " + recallJar);
 	}
 }
