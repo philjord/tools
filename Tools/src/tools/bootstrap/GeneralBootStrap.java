@@ -2,6 +2,7 @@ package tools.bootstrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -43,7 +44,7 @@ public class GeneralBootStrap
 		return javaExe;
 	}
 
-	protected static void startProcess(ProcessBuilder pb, String logFilename, String errLogFilename)
+	protected static void startProcess(ProcessBuilder pb, String logFilename, String errLogFilename, final String extraInfo)
 	{
 		File log = new File(logFilename);
 		final File logErr = new File(errLogFilename);
@@ -74,11 +75,31 @@ public class GeneralBootStrap
 								"Error output upload", JOptionPane.YES_NO_OPTION);
 						if (result == JOptionPane.OK_OPTION)
 						{
-							ErrorLogUploader errorLogUploader = new ErrorLogUploader(logErr);
-							errorLogUploader.doUpload();// will block
+							//First we need to desperately load the jftp.jar in lib, before constructing the ErrorLogUploader
+							try
+							{
+								File thisJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI()
+										.getPath());
+								ClassPathHack.addFile(new File(thisJar.getParent(), ps + "lib" + ps + "jftp.jar"));
+								System.out.println("jftp jar added to classpath hackishly");
+
+								//must close teh handle to the error file, so uploader can add to it
+								streamPumpErr.stopNow();
+								ErrorLogUploader errorLogUploader = new ErrorLogUploader(logErr, extraInfo);
+								errorLogUploader.doUpload();// will block
+
+							}
+							catch (URISyntaxException e)
+							{
+								e.printStackTrace();
+							}
+							catch (IOException e)
+							{
+								e.printStackTrace();
+							}
 						}
 					}
-
+					System.out.println("A happy finish");
 					//Mac os x complains if I don't get an exit value TODO: check this works?
 					System.exit(0);
 				}

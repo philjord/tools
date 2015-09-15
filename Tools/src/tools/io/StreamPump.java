@@ -21,6 +21,8 @@ public class StreamPump extends Thread
 
 	private long bytesPumped = 0;
 
+	private boolean stop = false;
+
 	public StreamPump(InputStream is, File out) throws FileNotFoundException
 	{
 		this.is = is;
@@ -30,6 +32,12 @@ public class StreamPump extends Thread
 	public long getBytesPumped()
 	{
 		return bytesPumped;
+	}
+
+	public void stopNow()
+	{
+		stop = true;
+		this.interrupt();
 	}
 
 	@Override
@@ -44,7 +52,7 @@ public class StreamPump extends Thread
 			bos = new BufferedOutputStream(os);
 			byte[] buffer = new byte[32]; // Adjust if you want
 			int bytesRead;
-			while ((bytesRead = bis.read(buffer)) != -1)
+			while ((bytesRead = bis.read(buffer)) != -1 && !stop)
 			{
 				bos.write(buffer, 0, bytesRead);
 				bos.flush();

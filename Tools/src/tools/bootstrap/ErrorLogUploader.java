@@ -5,8 +5,10 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,13 +38,17 @@ public class ErrorLogUploader
 
 	private FTPMessageCollector ftpMessageCollector = new FTPMessageCollector();
 
-	private JFrame frame = new JFrame("Uploading error file");
+	private JFrame frame;
 
 	private File logErr;
 
-	public ErrorLogUploader(File logErr)
+	private String extraInfo;
+
+	public ErrorLogUploader(File logErr, String extraInfo)
 	{
 		this.logErr = logErr;
+		this.extraInfo = extraInfo;
+		frame = new JFrame("Uploading error file");
 		frame.setSize(200, 80);
 		frame.setResizable(false);
 		JProgressBar progressBar = new JProgressBar();
@@ -53,14 +59,13 @@ public class ErrorLogUploader
 		JButton cancelButton = new JButton("Cancel");
 		buttonPanel.add(cancelButton);
 		frame.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-		frame.setVisible(true);
-
 		cancelButton.addActionListener(new ActionListener()
 		{
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
 				ftp.cancelTransfer();
+				System.out.println("ftp transfer cancel called");
 			}
 		});
 
@@ -71,8 +76,25 @@ public class ErrorLogUploader
 	 */
 	public void doUpload()
 	{
+
+		frame.setVisible(true);
 		try
 		{
+			// add the system props just as a desperate end data to log file
+			Properties props = System.getProperties();
+			for (Object propKey : props.keySet())
+			{
+				// skip this well known monster
+				if (!"java.class.path".equals(propKey))
+					extraInfo += "\nKey: " + propKey + " : " + props.getProperty((String) propKey);
+			}
+
+			extraInfo += "\nEnd of Extra Info.";
+			FileOutputStream fos = new FileOutputStream(logErr, true);
+			fos.write(extraInfo.getBytes());
+			fos.flush();
+			fos.close();
+
 			ftp = new FTPClient(A);
 			ftp.setMessageListener(ftpMessageCollector);
 			ftp.login(B, C);
@@ -84,8 +106,11 @@ public class ErrorLogUploader
 			// no need to set dir as this user only has root
 
 			// put log file plus a unique id  
-			ftp.put(logErr.getAbsolutePath(), logErr.getName() + System.currentTimeMillis() + ".txt");
+			String outName = logErr.getName() + System.currentTimeMillis() + ".log";
+			ftp.put(logErr.getAbsolutePath(), outName);
+
 			ftp.quit();
+			System.out.println("error log upload successful");
 		}
 		catch (UnknownHostException e)
 		{
@@ -99,6 +124,7 @@ public class ErrorLogUploader
 		{
 			e.printStackTrace();
 		}
+
 		// just ignore all failures and quietly leave the room
 	}
 }
