@@ -21,12 +21,11 @@ import com.enterprisedt.net.ftp.FTPException;
 import com.enterprisedt.net.ftp.FTPMessageCollector;
 import com.enterprisedt.net.ftp.FTPTransferType;
 
-/**
- *  This class grabs game media from my ftp server, it asks for the password though...
- *
- */
+//TODO: swap this whole thing across to commons.net.ftp which is just better
 public class ErrorLogUploader
 {
+	public static String ls = System.getProperty("line.separator");;
+
 	// names alter to avoid github bots pulling this
 	private static final String A = "philjord.ddns.net";
 
@@ -86,10 +85,10 @@ public class ErrorLogUploader
 			{
 				// skip this well known monster
 				if (!"java.class.path".equals(propKey))
-					extraInfo += "\nKey: " + propKey + " : " + props.getProperty((String) propKey);
+					extraInfo += ls + "Key: " + propKey + " : " + props.getProperty((String) propKey);
 			}
 
-			extraInfo += "\nEnd of Extra Info.";
+			extraInfo += ls + "End of Extra Info.";
 			FileOutputStream fos = new FileOutputStream(logErr, true);
 			fos.write(extraInfo.getBytes());
 			fos.flush();

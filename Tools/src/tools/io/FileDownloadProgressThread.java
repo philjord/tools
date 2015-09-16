@@ -36,14 +36,15 @@ public class FileDownloadProgressThread extends Thread
 		while (!stop)
 		{
 			long destLen = destination.length();
-			progressMonitor.setProgress((int) destLen);
+			progressMonitor.setProgress((int) destLen);			
 
-			if (destLen >= fileStartSize)
+			if (destLen == fileStartSize)
 				stop = true;
 
 			if (cancelCallBack != null && progressMonitor.isCanceled())
 			{
 				cancelCallBack.cancel();
+				stop = true;
 			}
 
 			try

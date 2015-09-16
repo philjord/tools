@@ -241,10 +241,10 @@ public class SourceForgeUpdater
 		String javaExe = "java";// just call the path version by default
 
 		//find out if a JRE folder exists, and use it if possible
-		File possibleJreFolder = new File(rootDirectory + "\\jre");
+		File possibleJreFolder = new File(rootDirectory + ps + "jre");
 		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
 		{
-			javaExe = rootDirectory + "\\jre\\bin\\java";
+			javaExe = rootDirectory + ps + "jre" + ps + "bin" + ps + "java";
 		}
 		String jarpath = "." + ps + "lib" + ps + "update.jar" + fs;
 		ProcessBuilder pb = new ProcessBuilder(javaExe, "-cp", jarpath, "tools.updater.Update", updateZip, unzipPath, rootDirectory,

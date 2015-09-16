@@ -35,10 +35,10 @@ public class GeneralBootStrap
 		String javaExe = "java";// just call the path version by default
 
 		//find out if a JRE folder exists, and use it if possible
-		File possibleJreFolder = new File(".\\jre");
+		File possibleJreFolder = new File("." + ps + "jre");
 		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
 		{
-			javaExe = ".\\jre\\bin\\java";
+			javaExe = "." + ps + "jre" + ps + "bin" + ps + "java";
 		}
 
 		return javaExe;
@@ -68,8 +68,8 @@ public class GeneralBootStrap
 			{
 				public void processFinished(Process process)
 				{
-					// a couple of fixed outputs I can't avoid
-					if (streamPumpErr.getBytesPumped() > 120)
+					// a couple of fixed outputs I can't avoid (java3d, openal, prefs)
+					if (streamPumpErr.getBytesPumped() > 300)
 					{
 						int result = JOptionPane.showConfirmDialog(null, "Some issues occurred during session, send err log to author?",
 								"Error output upload", JOptionPane.YES_NO_OPTION);

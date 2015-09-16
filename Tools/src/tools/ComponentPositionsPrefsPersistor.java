@@ -20,7 +20,7 @@ public class ComponentPositionsPrefsPersistor implements ComponentListener
 	 */
 	private HashMap<String, Component> components = new HashMap<String, Component>();
 
-	Preferences prefs = Preferences.userRoot();
+	private Preferences prefs = Preferences.userNodeForPackage(ComponentPositionsPrefsPersistor.class);
 
 	public ComponentPositionsPrefsPersistor(Component root)
 	{

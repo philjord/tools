@@ -17,6 +17,8 @@ import net.lingala.zip4j.unzip.UnzipUtil;
 
 public class Update
 {
+	
+	
 	private static final int BUFF_SIZE = 4096;
 
 	public static String ps = System.getProperty("file.separator");
@@ -64,10 +66,10 @@ public class Update
 			String javaExe = "java";// just call the path version by default
 
 			//find out if a JRE folder exists, and use it if possible
-			File possibleJreFolder = new File(rootDirectory + "\\jre");
+			File possibleJreFolder = new File(rootDirectory + ps + "jre");
 			if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
 			{
-				javaExe = rootDirectory + "\\jre\\bin\\java";
+				javaExe = rootDirectory + ps + "jre" + ps + "bin" + ps + "java";
 			}
 
 			ProcessBuilder pb = new ProcessBuilder(javaExe, "-jar", restartJar);
@@ -106,7 +108,7 @@ public class Update
 				{
 
 					//Build the output file
-					String outFilePath = destinationPath + System.getProperty("file.separator") + fileHeader.getFileName();
+					String outFilePath = destinationPath + fs + fileHeader.getFileName();
 					File outFile = new File(outFilePath);
 
 					// skip anything in the skiplist jar 
