@@ -60,7 +60,7 @@ public class WeakListenerList<E> implements Iterable<E>
 		for (int i = 0; i < refs.size(); i++)
 		{
 			WeakReference<E> wr = refs.get(i);
-			if (wr.get() == e)
+			if (wr!=null && wr.get() == e)
 			{
 				return i;
 			}
