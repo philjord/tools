@@ -1,13 +1,21 @@
 package tools.updater;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.border.TitledBorder;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -17,35 +25,60 @@ import net.lingala.zip4j.unzip.UnzipUtil;
 
 public class Update
 {
-	
-	
+	private static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+	private static JProgressBar progressBar = new JProgressBar();
+
 	private static final int BUFF_SIZE = 4096;
 
 	public static String ps = System.getProperty("file.separator");
 
 	public static String fs = System.getProperty("path.separator");
 
-	//TEST values
-	/*String zipfile = "E:\\Java\\installers\\ElderScrollsExplorer\\update\\ElderScrollsExplorer v2.02.zip";//args[0];
-		String unzipPath = "E:\\Java\\installers";//args[1];
-		String rootDirectory = "E:\\Java\\installers\\ElderScrollsExplorer";//args[2];
-		String restartJar = "E:\\Java\\installers\\ElderScrollsExplorer\\ElderScrollsExplorer.jar";//args[3];
-
-		 
-	*/
-
 	// do the unzip but skip the update.jar file (of course) or ignore error
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
 		try
 		{
+			// force a lgos folder in all cases!
+			File logFolder = new File("logs" + ps);
+			logFolder.mkdirs();
+			System.setOut(new PrintStream(new FileOutputStream("logs" + ps + "updater.out.txt", true)));
+			System.setErr(new PrintStream(new FileOutputStream("logs" + ps + "updater.err.txt", true)));
+		}
+		catch (Exception e)
+		{
+			// if no error log then desperate dialog?
+			JOptionPane.showMessageDialog(null, "" + e);
+			restart(args[2], args[3]);
+		}
+
+		try
+		{
+			System.out.println(dateFormat.format(new Date())); //2014/08/06 15:59:48
+
 			String zipfile = args[0];
 			String unzipPath = args[1];
 			String rootDirectory = args[2];
 			String restartJar = args[3];
+			//TEST values
+			/*String zipfile = "E:\\Java\\installers\\ElderScrollsExplorer\\update\\ElderScrollsExplorer v2.09.zip";//args[0];
+			String unzipPath = "E:\\Java\\installers";//args[1];
+			String rootDirectory = "E:\\Java\\installers\\ElderScrollsExplorer";//args[2];
+			String restartJar = "E:\\Java\\installers\\ElderScrollsExplorer\\ElderScrollsExplorer.jar";//args[3];
+*/
+
+			JFrame f = new JFrame("Updating " + restartJar);
+			f.setSize(200, 10);
+			f.setResizable(false);
+
+			progressBar.setIndeterminate(true);
+			progressBar.setBorder(new TitledBorder("Updating"));
+			f.getContentPane().add(progressBar, BorderLayout.CENTER);
+			f.pack();
+			f.setVisible(true);
 
 			// do the unzip but skip the update.jar file (of course) or ignore error
-
 			ArrayList<File> skipList = new ArrayList<File>();
 			skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
 
@@ -53,35 +86,42 @@ public class Update
 			if (zf.exists())
 			{
 				// wait for a moment to ensure callee has closed
-				Thread.sleep(2000);
-				processFile(zf, unzipPath, skipList);
 				Thread.sleep(500);
+				processFile(zf, unzipPath, skipList);
+				Thread.sleep(200);
 			}
 			else
 			{
+				System.err.println("Update file does not exist? " + zf.getAbsolutePath());
 				JOptionPane.showMessageDialog(null, "Update file des not exist? " + zf.getAbsolutePath());
 			}
-
-			//now restart the callee jar
-			String javaExe = "java";// just call the path version by default
-
-			//find out if a JRE folder exists, and use it if possible
-			File possibleJreFolder = new File(rootDirectory + ps + "jre");
-			if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
-			{
-				javaExe = rootDirectory + ps + "jre" + ps + "bin" + ps + "java";
-			}
-
-			ProcessBuilder pb = new ProcessBuilder(javaExe, "-jar", restartJar);
-			pb.start();
-			// wait just a bit longer...
-			Thread.sleep(500);
-			System.exit(0);
+			restart(rootDirectory, restartJar);
 		}
 		catch (Exception e)
 		{
-			JOptionPane.showMessageDialog(null, e);
+			System.out.println(dateFormat.format(new Date())); //2014/08/06 15:59:48
+			e.printStackTrace();
 		}
+	}
+
+	private static void restart(String rootDirectory, String restartJar) throws Exception
+	{
+		//now restart the callee jar
+		String javaExe = "java";// just call the path version by default
+
+		//find out if a JRE folder exists, and use it if possible
+		File possibleJreFolder = new File(rootDirectory + ps + "jre");
+		if (possibleJreFolder.exists() && possibleJreFolder.isDirectory())
+		{
+			javaExe = rootDirectory + ps + "jre" + ps + "bin" + ps + "java";
+		}
+
+		ProcessBuilder pb = new ProcessBuilder(javaExe, "-jar", restartJar);
+		pb.start();
+		// wait just a bit longer...
+		Thread.sleep(200);
+		System.exit(0);
+
 	}
 
 	public static void processFile(File file, String destinationPath, List<File> skipList) throws IOException, ZipException
@@ -106,14 +146,17 @@ public class Update
 				FileHeader fileHeader = (FileHeader) fileHeaderList.get(i);
 				if (fileHeader != null)
 				{
-
+					System.out.println("Starting " + fileHeader.getFileName());
 					//Build the output file
-					String outFilePath = destinationPath + fs + fileHeader.getFileName();
+					String outFilePath = destinationPath + ps + fileHeader.getFileName();
 					File outFile = new File(outFilePath);
 
-					// skip anything in the skiplist jar 
+					// extract skip files with a .update extension
 					if (skipList.contains(outFile))
-						continue;
+					{
+						outFile = new File(outFilePath + ".update");
+					}
+					System.out.println("outFile " + outFile.getAbsolutePath());
 
 					//Checks if the file is a directory
 					if (fileHeader.isDirectory())

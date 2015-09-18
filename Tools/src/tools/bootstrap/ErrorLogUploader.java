@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.swing.JButton;
@@ -79,6 +82,7 @@ public class ErrorLogUploader
 		frame.setVisible(true);
 		try
 		{
+
 			// add the system props just as a desperate end data to log file
 			Properties props = System.getProperties();
 			for (Object propKey : props.keySet())
@@ -87,8 +91,8 @@ public class ErrorLogUploader
 				if (!"java.class.path".equals(propKey))
 					extraInfo += ls + "Key: " + propKey + " : " + props.getProperty((String) propKey);
 			}
-
-			extraInfo += ls + "End of Extra Info.";
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			extraInfo += ls + dateFormat.format(new Date()) + " end of extra info.";
 			FileOutputStream fos = new FileOutputStream(logErr, true);
 			fos.write(extraInfo.getBytes());
 			fos.flush();

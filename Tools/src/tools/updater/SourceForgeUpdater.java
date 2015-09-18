@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -45,9 +46,8 @@ public class SourceForgeUpdater
 	 */
 	public static boolean doUpdate(String currentVersionFileName, String listFilesURL)
 	{
-
 		JFrame f = new JFrame("Checking for updates to " + currentVersionFileName);
-		f.setSize(200, 120);
+		f.setSize(200, 10);
 		f.setResizable(false);
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setIndeterminate(true);
@@ -58,6 +58,7 @@ public class SourceForgeUpdater
 		JButton cancelButton = new JButton("Cancel");
 		buttonPanel.add(cancelButton);
 		f.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+		f.pack();
 		f.setVisible(true);
 
 		cancelButton.addActionListener(new ActionListener()
@@ -69,6 +70,9 @@ public class SourceForgeUpdater
 				conn.disconnect();
 			}
 		});
+
+		// let's see if the last update left an update jar for us to swap out...
+		updateUpdater();
 
 		String htmlStr = null;
 		// let's see whats at teh end of the given url shall we
@@ -235,6 +239,22 @@ public class SourceForgeUpdater
 		return true;
 	}
 
+	private static void updateUpdater()
+	{
+		String jarpath = "." + ps + "lib" + ps + "update.jar";
+		File updateJarUpdateFile = new File(jarpath + ".update");
+		// shall we swap out?
+		System.out.println("updateJarUpdateFile " + updateJarUpdateFile);
+		if (updateJarUpdateFile.exists())
+		{
+			System.out.println("exists");
+			File updateJar = new File(jarpath);
+			updateJar.delete();
+			updateJarUpdateFile.renameTo(new File(jarpath));
+			System.out.println("renamed");
+		}
+	}
+
 	private static void callUpdater(String updateZip, String unzipPath, String rootDirectory, String recallJar) throws IOException
 	{
 
@@ -246,10 +266,11 @@ public class SourceForgeUpdater
 		{
 			javaExe = rootDirectory + ps + "jre" + ps + "bin" + ps + "java";
 		}
-		String jarpath = "." + ps + "lib" + ps + "update.jar" + fs;
+		String jarpath = rootDirectory + ps + "lib" + ps + "update.jar" + fs;
 		ProcessBuilder pb = new ProcessBuilder(javaExe, "-cp", jarpath, "tools.updater.Update", updateZip, unzipPath, rootDirectory,
 				recallJar);
 		pb.start();
+
 		System.out.println("Called " + javaExe);
 		System.out.println("jarpath " + jarpath);
 		System.out.println("tools.updater.Update ");
