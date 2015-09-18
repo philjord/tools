@@ -16,6 +16,8 @@ public class GeneralBootStrap
 
 	public static String fs = System.getProperty("path.separator");
 
+	public static String cacheAutoComputeBounds = "-Dj3d.cacheAutoComputeBounds=true";
+
 	public static String noddraw = "-Dsun.java2d.noddraw=true";
 
 	public static String sharedctx = "-Dj3d.sharedctx=true";
