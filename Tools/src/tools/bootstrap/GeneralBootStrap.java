@@ -70,8 +70,8 @@ public class GeneralBootStrap
 			{
 				public void processFinished(Process process)
 				{
-					// a couple of fixed outputs I can't avoid (java3d, openal, prefs)
-					if (streamPumpErr.getBytesPumped() > 300)
+					// a couple of fixed outputs I can't avoid (java3d, openal, prefs, my version stamp)
+					if (streamPumpErr.getBytesPumped() > 800)
 					{
 						int result = JOptionPane.showConfirmDialog(null, "Some issues occurred during session, send err log to author?",
 								"Error output upload", JOptionPane.YES_NO_OPTION);
