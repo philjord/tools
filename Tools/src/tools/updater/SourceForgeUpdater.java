@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -175,8 +174,8 @@ public class SourceForgeUpdater
 									{
 										System.out.println("currentVersionFileName:" + currentVersionFileName + " != downloadFileName");
 
-										int result = JOptionPane.showConfirmDialog(f, "Do you want to update now?", "Update Availible",
-												JOptionPane.YES_NO_OPTION);
+										int result = JOptionPane.showConfirmDialog(f, "Update Availible: " + downloadFileName
+												+ "\nDo you want to update now?", "Update Availible", JOptionPane.YES_NO_OPTION);
 										if (result == JOptionPane.OK_OPTION)
 										{
 											f.setTitle("Updating to " + downloadFileName);
