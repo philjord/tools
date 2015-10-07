@@ -9,6 +9,8 @@ public class QueuingThread extends Thread
 	private ArrayList<Object> queue = new ArrayList<Object>();
 
 	private CallBack callBack;
+	
+	private boolean newestOnly = false;
 
 	public QueuingThread(CallBack callBack)
 	{
@@ -25,6 +27,16 @@ public class QueuingThread extends Thread
 		}
 	}
 
+	public boolean isNewestOnly()
+	{
+		return newestOnly;
+	}
+
+	public void setNewestOnly(boolean newestOnly)
+	{
+		this.newestOnly = newestOnly;
+	}
+	
 	public void run()
 	{
 		while (shouldRun)
@@ -55,7 +67,17 @@ public class QueuingThread extends Thread
 			// note vectors are synchronized so this remove won't interfere with add above
 			if (queue.size() > 0)
 			{
-				Object parameter = queue.remove(0);
+				Object parameter = null;
+				if (newestOnly)
+				{
+					parameter = queue.get(queue.size() - 1);
+					queue.clear();
+				}
+				else
+				{
+					parameter = queue.remove(0);
+				}
+			 
 				try
 				{
 					callBack.run(parameter);
