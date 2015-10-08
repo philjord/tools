@@ -43,8 +43,9 @@ public class SourceForgeUpdater
 	 * @return
 	 * @throws Exception
 	 */
-	public static boolean doUpdate(String currentVersionFileName, String listFilesURL)
+	public static boolean doUpdate(String zipPrefix, int majorVersion, int minorVersion, String listFilesURL)
 	{
+		String currentVersionFileName = zipPrefix + " v" + majorVersion + "." + minorVersion + ".zip";
 		JFrame f = new JFrame("Checking for updates to " + currentVersionFileName);
 		f.setSize(200, 10);
 		f.setResizable(false);
@@ -170,10 +171,34 @@ public class SourceForgeUpdater
 											downloadUrl.substring(fileNameStartIdx + "/".length(), fileNameEndIdx), "UTF-8");
 									System.out.println("downloadFileName " + downloadFileName);
 
-									if (!currentVersionFileName.equals(downloadFileName))
+									String downloadPrefix = "";
+									int downloadMajorVersion = -1;
+									int downloadMinorVersion = -1;
+									try
 									{
-										System.out.println("currentVersionFileName:" + currentVersionFileName + " != downloadFileName");
+										downloadPrefix = downloadFileName.substring(0, downloadFileName.indexOf(" v"));
+										downloadMajorVersion = Integer.parseInt(downloadFileName.substring(
+												downloadFileName.indexOf(" v") + 2, downloadFileName.indexOf(".")));
+										downloadMinorVersion = Integer.parseInt(downloadFileName.substring(
+												downloadFileName.indexOf(".") + 1, downloadFileName.indexOf(".zip")));
+									}
+									catch (Exception e)
+									{
+										e.printStackTrace();
+										JOptionPane.showMessageDialog(f, "Download file name unparsable: " + downloadFileName,
+												"Update impossible", JOptionPane.WARNING_MESSAGE);
+										return true;
+									}
 
+									System.out.println("zipPrefix:" + zipPrefix + " downloadPrefix:" + downloadPrefix);
+									System.out.println("majorVersion:" + majorVersion + " downloadMajorVersion:" + downloadMajorVersion);
+									System.out.println("minorVersion:" + minorVersion + " downloadMinorVersion:" + downloadMinorVersion);
+
+									if (downloadPrefix.equals(zipPrefix) && //
+											(majorVersion < downloadMajorVersion || //
+											(majorVersion == downloadMajorVersion && minorVersion < downloadMinorVersion)))
+									{
+										System.out.println("Update availible");
 										int result = JOptionPane.showConfirmDialog(f, "Update Availible: " + downloadFileName
 												+ "\nDo you want to update now?", "Update Availible", JOptionPane.YES_NO_OPTION);
 										if (result == JOptionPane.OK_OPTION)
@@ -210,9 +235,9 @@ public class SourceForgeUpdater
 									}
 									else
 									{
-										System.out.println("currentVersionFileName:" + currentVersionFileName + " = downloadFileName");
 										System.out.println("No update");
 									}
+
 								}
 								catch (URISyntaxException e1)
 								{
