@@ -6,8 +6,8 @@ public class PrimitiveBytes
 	public static float extractFloat(byte[] bytes, int start)
 	{
 		// LittleEndianPrimitiveBytes has lookup table too
-		return Float.intBitsToFloat(((bytes[start + 3] & 0xff) << 24) | ((bytes[start + 2] & 0xff) << 16) | ((bytes[start + 1] & 0xff) << 8)
-				| (bytes[start + 0] & 0xff));
+		return Float.intBitsToFloat(((bytes[start + 3] & 0xff) << 24) | ((bytes[start + 2] & 0xff) << 16)
+				| ((bytes[start + 1] & 0xff) << 8) | (bytes[start + 0] & 0xff));
 	}
 
 	public static boolean extractBoolean(byte[] bytes, int start)
@@ -22,7 +22,8 @@ public class PrimitiveBytes
 
 	public static int extractInt(byte[] bytes, int start)
 	{
-		return ((bytes[start + 3] & 0xff) << 24) | ((bytes[start + 2] & 0xff) << 16) | ((bytes[start + 1] & 0xff) << 8) | (bytes[start + 0] & 0xff);
+		return ((bytes[start + 3] & 0xff) << 24) | ((bytes[start + 2] & 0xff) << 16) | ((bytes[start + 1] & 0xff) << 8)
+				| (bytes[start + 0] & 0xff);
 	}
 
 	public static int extractLong(byte[] bytes, int start)
@@ -168,5 +169,16 @@ public class PrimitiveBytes
 		byte[] bytes = new byte[1];
 		bytes[0] = b ? (byte) 0 : (byte) 1;
 		return bytes;
+	}
+
+	public static byte[] getBytesFast(String str)
+	{
+		final char buffer[] = new char[str.length()];
+		final int length = str.length();
+		str.getChars(0, length, buffer, 0);
+		final byte b[] = new byte[length];
+		for (int j = 0; j < length; j++)
+			b[j] = (byte) buffer[j];
+		return b;
 	}
 }
