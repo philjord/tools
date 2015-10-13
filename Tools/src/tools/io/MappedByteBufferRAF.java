@@ -45,7 +45,15 @@ public class MappedByteBufferRAF extends RandomAccessFile
 	@Override
 	public int read() throws IOException
 	{
-		return mappedByteBuffer.get();
+	//	try
+		{
+			return mappedByteBuffer.get();
+		}
+	//	catch (BufferUnderflowException e)
+	//	{
+			// indicate end of file
+	//		return -1;
+	//	}
 	}
 
 	private int readBytes(byte b[], int off, int len)
@@ -62,14 +70,23 @@ public class MappedByteBufferRAF extends RandomAccessFile
 		}
 	}
 
+	@Override
 	public int read(byte b[], int off, int len) throws IOException
 	{
 		return readBytes(b, off, len);
 	}
 
+	@Override
 	public int read(byte b[]) throws IOException
 	{
 		return readBytes(b, 0, b.length);
+	}
+
+	@Override
+	public int skipBytes(int n)
+	{
+		mappedByteBuffer.position(mappedByteBuffer.position() + n);
+		return n;
 	}
 
 	@Override
@@ -105,5 +122,14 @@ public class MappedByteBufferRAF extends RandomAccessFile
 	public void setLength(long newLength) throws IOException
 	{
 		super.setLength(newLength);
+	}
+
+	/**
+	 * For regular old operations
+	 * @return
+	 */
+	public MappedByteBuffer getMappedByteBuffer()
+	{
+		return mappedByteBuffer;
 	}
 }
