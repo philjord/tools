@@ -45,15 +45,15 @@ public class MappedByteBufferRAF extends RandomAccessFile
 	@Override
 	public int read() throws IOException
 	{
-	//	try
+		try
 		{
 			return mappedByteBuffer.get();
 		}
-	//	catch (BufferUnderflowException e)
-	//	{
+		catch (BufferUnderflowException e)
+		{
 			// indicate end of file
-	//		return -1;
-	//	}
+			return -1;
+		}
 	}
 
 	private int readBytes(byte b[], int off, int len)
