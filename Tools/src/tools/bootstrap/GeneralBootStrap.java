@@ -22,6 +22,8 @@ public class GeneralBootStrap
 
 	public static String sharedctx = "-Dj3d.sharedctx=true";
 
+	public static String clearStencilBuffer = "-Dj3d.stencilClear=true";
+
 	public static String java3dSound = "-Dj3d.audiodevice=com.sun.j3d.audioengines.javasound.JavaSoundMixer";
 
 	public static String fancyGCa = "-XX:+UnlockExperimentalVMOptions";
