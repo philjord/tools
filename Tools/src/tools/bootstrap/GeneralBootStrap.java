@@ -30,6 +30,12 @@ public class GeneralBootStrap
 
 	public static String fancyGCb = "-XX:+UseG1GC";
 
+	public static String implicitAntialiasing = "-Dj3d.implicitAntialiasing=true";
+
+	public static String noOptimizeForSpace = "-Dj3d.optimizeForSpace=false";
+
+	public static String allowSoleUser = "-Dj3d.allowSoleUser=true";
+
 	public static String disableExtJars = "-Djava.ext.dirs=." + ps + "none" + ps;
 
 	//TODO: add the -server arg when the jre is my own deployed one as a server jvm
