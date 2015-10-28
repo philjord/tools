@@ -1,4 +1,4 @@
-package tools;
+package old.utils;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;

@@ -1,4 +1,4 @@
-package tools.swing;
+package old.swing;
 
 import javax.swing.JInternalFrame;
 import javax.swing.event.InternalFrameEvent;

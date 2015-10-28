@@ -1,4 +1,4 @@
-package tools;
+package old;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.prefs.Preferences;
 
 import javax.swing.JRootPane;
+
+import tools.StringStore;
 
 public class ComponentPositionsPrefsPersistor implements ComponentListener
 {
