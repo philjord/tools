@@ -19,7 +19,8 @@ public class LittleEndianPrimitiveBytes
 	public static byte readByte(InputStream stream) throws IOException
 	{
 		byte[] b = new byte[1];
-		stream.read(b, 0, 1);
+		if(stream.read(b, 0, 1)==-1)
+			throw new IOException("unexpected end of stream");
 		return b[0];
 	}
 
@@ -36,7 +37,8 @@ public class LittleEndianPrimitiveBytes
 	public static byte[] readBytes(int numBytes, InputStream stream) throws IOException
 	{
 		byte[] b = new byte[numBytes];
-		stream.read(b, 0, numBytes);
+		if(stream.read(b, 0, numBytes)==-1)
+			throw new IOException("unexpected end of stream");
 		return b;
 	}
 
@@ -52,7 +54,8 @@ public class LittleEndianPrimitiveBytes
 	public static int readInt(InputStream stream) throws IOException
 	{
 		byte b[] = new byte[4];
-		stream.read(b, 0, 4);
+		if(stream.read(b, 0, 4)==-1)
+			throw new IOException("unexpected end of stream");
 		return toInt(b);
 	}
 
@@ -69,7 +72,8 @@ public class LittleEndianPrimitiveBytes
 	public static short readShort(InputStream stream) throws IOException
 	{
 		byte b[] = new byte[2];
-		stream.read(b, 0, 2);
+		if(stream.read(b, 0, 2)==-1)
+			throw new IOException("unexpected end of stream");
 		return toShort(b);
 	}
 
@@ -105,7 +109,8 @@ public class LittleEndianPrimitiveBytes
 	public static float readFloat(InputStream stream) throws IOException
 	{
 		byte b[] = new byte[4];
-		stream.read(b, 0, 4);
+		if(stream.read(b, 0, 4)==-1)
+			throw new IOException("unexpected end of stream");
 		return toFloat(b);
 	}
 
@@ -134,7 +139,8 @@ public class LittleEndianPrimitiveBytes
 	{
 		int len = readInt(stream);
 		byte[] buffer = new byte[len];
-		stream.read(buffer, 0, len);
+		if(stream.read(buffer, 0, len)==-1)
+			throw new IOException("unexpected end of stream");
 		return new String(buffer);
 	}
 
@@ -164,7 +170,8 @@ public class LittleEndianPrimitiveBytes
 	{
 		short len = readUnsignedByte(stream);
 		byte[] buffer = new byte[len];
-		stream.read(buffer, 0, len);
+		if(stream.read(buffer, 0, len)==-1)
+			throw new IOException("unexpected end of stream");
 		return new String(buffer);
 	}
 
