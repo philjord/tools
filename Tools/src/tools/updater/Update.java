@@ -81,7 +81,7 @@ public class Update
 			// do the unzip but skip the update.jar file (of course) or ignore error
 			ArrayList<File> skipList = new ArrayList<File>();
 			skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
-
+			
 			File zf = new File(zipfile);
 			if (zf.exists())
 			{
@@ -146,9 +146,18 @@ public class Update
 				FileHeader fileHeader = (FileHeader) fileHeaderList.get(i);
 				if (fileHeader != null)
 				{
+					// never replace ini files
+					if( fileHeader.getFileName().toLowerCase().endsWith(".ini"))
+					{
+						System.out.println("Ignoring " + fileHeader.getFileName());
+						continue;
+					}
+					
+					
 					System.out.println("Starting " + fileHeader.getFileName());
 					//Build the output file
-					String outFilePath = destinationPath + ps + fileHeader.getFileName();
+					String outFilePath = destinationPath + ps + fileHeader.getFileName();					
+					
 					File outFile = new File(outFilePath);
 
 					// extract skip files with a .update extension
