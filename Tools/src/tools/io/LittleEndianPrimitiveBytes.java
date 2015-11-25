@@ -174,6 +174,15 @@ public class LittleEndianPrimitiveBytes
 			throw new IOException("unexpected end of stream");
 		return new String(buffer);
 	}
+	
+	public static String readRealShortString(InputStream stream) throws IOException
+	{
+		int len = readUnsignedShort(stream);
+		byte[] buffer = new byte[len];
+		if(stream.read(buffer, 0, len)==-1)
+			throw new IOException("unexpected end of stream");
+		return new String(buffer);
+	}
 
 	//private static HashMap<Integer, Integer> floatHitCount = new HashMap<Integer, Integer>();
 
