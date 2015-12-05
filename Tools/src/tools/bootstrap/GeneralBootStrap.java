@@ -2,6 +2,7 @@ package tools.bootstrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 
 import javax.swing.JDialog;
@@ -74,8 +75,7 @@ public class GeneralBootStrap
 			streamPumpErr.start();
 
 			ProcessExitDetector processExitDetector = new ProcessExitDetector(p);
-			processExitDetector.addProcessListener(new ProcessListener()
-			{
+			processExitDetector.addProcessListener(new ProcessListener() {
 				public void processFinished(Process process)
 				{
 					// a couple of fixed outputs I can't avoid (java3d, openal, prefs, my version stamp)
@@ -88,8 +88,8 @@ public class GeneralBootStrap
 							//First we need to desperately load the jftp.jar in lib, before constructing the ErrorLogUploader
 							try
 							{
-								File thisJar = new File(GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI()
-										.getPath());
+								File thisJar = new File(
+										GeneralBootStrap.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
 								ClassPathHack.addFile(new File(thisJar.getParent(), ps + "lib" + ps + "jftp.jar"));
 								System.out.println("jftp jar added to classpath hackishly");
 
@@ -130,8 +130,8 @@ public class GeneralBootStrap
 			JOptionPane opt = new JOptionPane("Logs are located:" + log.getAbsolutePath(), JOptionPane.INFORMATION_MESSAGE,
 					JOptionPane.DEFAULT_OPTION, null, new Object[] {}); // no buttons
 			final JDialog dlg = opt.createDialog("Log location");
-			new Thread(new Runnable()
-			{
+			new Thread(new Runnable() {
+
 				public void run()
 				{
 					try
@@ -145,6 +145,7 @@ public class GeneralBootStrap
 					dlg.dispose();
 
 				}
+
 			}).start();
 			dlg.setVisible(true);
 		}
@@ -154,8 +155,17 @@ public class GeneralBootStrap
 	protected static String getXMX()
 	{
 		String os = System.getProperty("os.arch");
-
-		if (os.indexOf("64") != -1)
+		long availableMemory = 1000000000L;// assume low
+		try
+		{
+			com.sun.management.OperatingSystemMXBean mxbean = (com.sun.management.OperatingSystemMXBean) ManagementFactory
+					.getOperatingSystemMXBean();
+			availableMemory = mxbean.getTotalPhysicalMemorySize();
+		}
+		catch (Exception e)
+		{// fine skip it
+		}
+		if (os.indexOf("64") != -1 && availableMemory > 4000000000L)
 		{
 			return "-Xmx2400m";
 		}
