@@ -23,11 +23,12 @@ import javax.swing.event.HyperlinkListener;
 
 public class UserGuideDisplay
 {
-	JEditorPane editorPane = null;
+	private JEditorPane editorPane = null;
+	private JDialog dialog = null;
 
 	public void display(Component parent, String htmlFile)
 	{
-		if (editorPane == null)
+		if (dialog == null)
 		{
 			try
 			{
@@ -45,8 +46,7 @@ public class UserGuideDisplay
 				editorPane.setPage(new File(htmlFile).toURI().toURL());
 
 				// TIP: Make the JOptionPane resizable using the HierarchyListener
-				editorPane.addHierarchyListener(new HierarchyListener()
-				{
+				editorPane.addHierarchyListener(new HierarchyListener() {
 					public void hierarchyChanged(HierarchyEvent e)
 					{
 						Window window = SwingUtilities.getWindowAncestor(editorPane);
@@ -62,14 +62,12 @@ public class UserGuideDisplay
 				});
 
 				// TIP: Add Hyperlink listener to process hyperlinks
-				editorPane.addHyperlinkListener(new HyperlinkListener()
-				{
+				editorPane.addHyperlinkListener(new HyperlinkListener() {
 					public void hyperlinkUpdate(final HyperlinkEvent e)
 					{
 						if (e.getEventType() == HyperlinkEvent.EventType.ENTERED)
 						{
-							EventQueue.invokeLater(new Runnable()
-							{
+							EventQueue.invokeLater(new Runnable() {
 								public void run()
 								{
 									// TIP: Show hand cursor
@@ -81,8 +79,7 @@ public class UserGuideDisplay
 						}
 						else if (e.getEventType() == HyperlinkEvent.EventType.EXITED)
 						{
-							EventQueue.invokeLater(new Runnable()
-							{
+							EventQueue.invokeLater(new Runnable() {
 								public void run()
 								{
 									// Show default cursor
@@ -117,14 +114,19 @@ public class UserGuideDisplay
 			{
 				e.printStackTrace();
 			}
+
+			//JOptionPane.showMessageDialog(parent, new JScrollPane(editorPane), "User Guide", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane pane = new JOptionPane(new JScrollPane(editorPane), JOptionPane.PLAIN_MESSAGE);
+			// Configure via set methods
+			dialog = pane.createDialog(parent, "User Guide");
+			// the line below is added to the example from the docs
+			dialog.setModal(false); // this says not to block background components
+			dialog.setVisible(true);
 		}
-		//JOptionPane.showMessageDialog(parent, new JScrollPane(editorPane), "User Guide", JOptionPane.PLAIN_MESSAGE);
-		JOptionPane pane = new JOptionPane(new JScrollPane(editorPane), JOptionPane.PLAIN_MESSAGE);
-		// Configure via set methods
-		JDialog dialog = pane.createDialog(parent, "User Guide");
-		// the line below is added to the example from the docs
-		dialog.setModal(false); // this says not to block background components
-		dialog.setVisible(true);
+		else
+		{
+			dialog.setVisible(true);
+		}
 	}
 
 }
