@@ -38,18 +38,18 @@ public class Update
 	// do the unzip but skip the update.jar file (of course) or ignore error
 	public static void main(String[] args) throws Exception
 	{
+		// force a logs folder in all cases!
+					File logFolder = new File("." + ps + "logs" + ps);
 		try
-		{
-			// force a lgos folder in all cases!
-			File logFolder = new File("logs" + ps);
+		{			
 			logFolder.mkdirs();
-			System.setOut(new PrintStream(new FileOutputStream("logs" + ps + "updater.out.txt", true)));
-			System.setErr(new PrintStream(new FileOutputStream("logs" + ps + "updater.err.txt", true)));
+			System.setOut(new PrintStream(new FileOutputStream("." + ps + "logs" + ps + "updater.out.txt", true)));
+			System.setErr(new PrintStream(new FileOutputStream("." + ps + "logs" + ps + "updater.err.txt", true)));
 		}
 		catch (Exception e)
 		{
 			// if no error log then desperate dialog?
-			JOptionPane.showMessageDialog(null, "" + e);
+			JOptionPane.showMessageDialog(null, "Problem with logs, folder = " +logFolder.getAbsolutePath()+ " : " + e);
 			restart(args[2], args[3]);
 		}
 
@@ -66,7 +66,7 @@ public class Update
 			String unzipPath = "E:\\Java\\installers";//args[1];
 			String rootDirectory = "E:\\Java\\installers\\ElderScrollsExplorer";//args[2];
 			String restartJar = "E:\\Java\\installers\\ElderScrollsExplorer\\ElderScrollsExplorer.jar";//args[3];
-*/
+			*/
 
 			JFrame f = new JFrame("Updating " + restartJar);
 			f.setSize(200, 10);
@@ -81,7 +81,7 @@ public class Update
 			// do the unzip but skip the update.jar file (of course) or ignore error
 			ArrayList<File> skipList = new ArrayList<File>();
 			skipList.add(new File(Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
-			
+
 			File zf = new File(zipfile);
 			if (zf.exists())
 			{
@@ -147,17 +147,16 @@ public class Update
 				if (fileHeader != null)
 				{
 					// never replace ini files
-					if( fileHeader.getFileName().toLowerCase().endsWith(".ini"))
+					if (fileHeader.getFileName().toLowerCase().endsWith(".ini"))
 					{
 						System.out.println("Ignoring " + fileHeader.getFileName());
 						continue;
 					}
-					
-					
+
 					System.out.println("Starting " + fileHeader.getFileName());
 					//Build the output file
-					String outFilePath = destinationPath + ps + fileHeader.getFileName();					
-					
+					String outFilePath = destinationPath + ps + fileHeader.getFileName();
+
 					File outFile = new File(outFilePath);
 
 					// extract skip files with a .update extension
