@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="/external_jars/external jars/zip4j_1.3.1.jar" sourcepath="E:/downloads&amp;installs/develop/java/zip4j_src_1.3.2.zip"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/external_jars/external jars/zip4j_1.3.1.jar" sourcepath="E:/downloads&amp;installs/develop/java/zip4j_src_1.3.2.zip"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/jftp.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
