@@ -13,7 +13,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import tools.GlobalKeyCatcher;
+import tools.swing.GlobalKeyCatcher;
 
 /**
  * @author Administrator
