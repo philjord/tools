@@ -5,8 +5,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.naming.OperationNotSupportedException;
-
 public class WeakListenerList<E> implements Iterable<E>
 {
 	private ArrayList<WeakReference<E>> refs = new ArrayList<WeakReference<E>>();
@@ -60,7 +58,7 @@ public class WeakListenerList<E> implements Iterable<E>
 		for (int i = 0; i < refs.size(); i++)
 		{
 			WeakReference<E> wr = refs.get(i);
-			if (wr!=null && wr.get() == e)
+			if (wr != null && wr.get() == e)
 			{
 				return i;
 			}
@@ -122,7 +120,7 @@ public class WeakListenerList<E> implements Iterable<E>
 
 		public void remove()
 		{
-			new OperationNotSupportedException().printStackTrace();
+			throw new UnsupportedOperationException();
 		}
 
 	}

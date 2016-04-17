@@ -1,4 +1,4 @@
-package tools;
+package tools.swing;
 
 import javax.swing.JComponent;
 import javax.swing.JTextArea;

@@ -8,8 +8,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import tools.io.FileDownloadProgressThread;
-import tools.io.FileDownloadProgressThread.CancelCallBack;
+import tools.swing.FileDownloadProgressThread;
+import tools.swing.FileDownloadProgressThread.CancelCallBack;
 
 /**
  * A utility that downloads a file from a URL.

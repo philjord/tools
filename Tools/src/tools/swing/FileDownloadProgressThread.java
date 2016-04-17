@@ -1,4 +1,4 @@
-package tools.io;
+package tools.swing;
 
 import java.awt.Component;
 import java.io.File;

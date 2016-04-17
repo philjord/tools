@@ -10,7 +10,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JRootPane;
 
-import tools.StringStore;
+import tools.swing.StringStore;
 
 public class ComponentPositionsPrefsPersistor implements ComponentListener
 {

@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.sun.istack.internal.Nullable;
-
 public class FileCopy
 {
 	public static void copyInputStreamToFile(InputStream in, File file)
@@ -50,7 +48,7 @@ public class FileCopy
 			}
 		}
 	}
-	
+
 	// Copy one file to another using NIO
 	public static void doCopy(final File source, final File destination) throws IOException
 	{
@@ -77,8 +75,7 @@ public class FileCopy
 	{
 		private final List<Closeable> closeables = new ArrayList<Closeable>();
 
-		// @Nullable is a JSR 305 annotation
-		public <T extends Closeable> T add(@Nullable final T closeable)
+		public <T extends Closeable> T add(final T closeable)
 		{
 			closeables.add(closeable);
 			return closeable;

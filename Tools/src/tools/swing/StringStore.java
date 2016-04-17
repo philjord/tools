@@ -1,4 +1,4 @@
-package tools;
+package tools.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
