@@ -24,11 +24,12 @@ public class PeriodicThread implements Runnable
 
 	public void start()
 	{
-
-		thread = new Thread(this, clockName);
-		thread.setDaemon(true);
-		thread.start();
-
+		if (thread == null)
+		{
+			thread = new Thread(this, clockName);
+			thread.setDaemon(true);
+			thread.start();
+		}
 	}
 
 	public void stop()
@@ -36,6 +37,7 @@ public class PeriodicThread implements Runnable
 		shouldRun = false;
 	}
 
+	@Override
 	public void run()
 	{
 		shouldRun = true;
