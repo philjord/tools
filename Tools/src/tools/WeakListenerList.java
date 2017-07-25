@@ -94,11 +94,13 @@ public class WeakListenerList<E> implements Iterable<E>
 		{
 			if (currentIteratorIndex < refs.size())
 			{
-				E e = refs.get(currentIteratorIndex).get();
+				WeakReference<E> wr = refs.get(currentIteratorIndex);
+				E e = wr == null ? null : wr.get();
 				while (e == null && currentIteratorIndex < refs.size() - 1)
 				{
 					currentIteratorIndex++;
-					refs.get(currentIteratorIndex).get();
+					wr = refs.get(currentIteratorIndex);
+					e = wr == null ? null : wr.get();					
 				}
 				return e != null;
 			}
@@ -106,12 +108,14 @@ public class WeakListenerList<E> implements Iterable<E>
 		}
 
 		public E next()
-		{
-			E e = refs.get(currentIteratorIndex).get();
+		{			
+			WeakReference<E> wr = refs.get(currentIteratorIndex);
+			E e = wr == null ? null : wr.get();
 			while (e == null && currentIteratorIndex < refs.size() - 1)
 			{
 				currentIteratorIndex++;
-				refs.get(currentIteratorIndex).get();
+				wr = refs.get(currentIteratorIndex);
+				e = wr == null ? null : wr.get();	
 			}
 			// now take it forward by 1
 			currentIteratorIndex++;
