@@ -2,7 +2,6 @@ package tools.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,10 +22,10 @@ public class StreamPump extends Thread
 
 	private boolean stop = false;
 
-	public StreamPump(InputStream is, File out) throws FileNotFoundException
+	public StreamPump(InputStream is, FileOutputStream out) throws FileNotFoundException
 	{
 		this.is = is;
-		this.os = new FileOutputStream(out);
+		this.os = out;
 	}
 
 	public long getBytesPumped()

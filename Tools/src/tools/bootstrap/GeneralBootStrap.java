@@ -1,6 +1,7 @@
 package tools.bootstrap;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
@@ -68,10 +69,10 @@ public class GeneralBootStrap
 
 			Process p = pb.start();
 
-			StreamPump streamPump = new StreamPump(p.getInputStream(), log);
+			StreamPump streamPump = new StreamPump(p.getInputStream(), new FileOutputStream(log));
 			streamPump.start();
 
-			final StreamPump streamPumpErr = new StreamPump(p.getErrorStream(), logErr);
+			final StreamPump streamPumpErr = new StreamPump(p.getErrorStream(), new FileOutputStream(logErr));
 			streamPumpErr.start();
 
 			ProcessExitDetector processExitDetector = new ProcessExitDetector(p);
