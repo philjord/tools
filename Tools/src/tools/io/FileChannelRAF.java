@@ -52,7 +52,7 @@ public class FileChannelRAF implements IRandomAccessFile {
 
 	@Override
 	public void seek(long pos) throws IOException {
-		fileChannel.position((int)pos);
+		fileChannel.position(pos);
 	}
 
 	/**
