@@ -30,6 +30,14 @@ public class ESMByteConvert
 		return ((bytes[start + 3] & 0xff) << 24) | ((bytes[start + 2] & 0xff) << 16) | ((bytes[start + 1] & 0xff) << 8)
 				| (bytes[start + 0] & 0xff);
 	}
+	
+	//THIS EXISTS BECAUSE Master has 
+	//formID = formID & 0xffffff | masterID << 24;
+	// meanign the hgih byte should be the masterId, and there fore I should strip it as teh actual form Id!!
+	public static int extractInt3(byte[] bytes, int start)
+	{
+		return  ((bytes[start + 2] & 0xff) << 16) | ((bytes[start + 1] & 0xff) << 8) | (bytes[start + 0] & 0xff);
+	}
 
 	public static int extractInt64(byte[] bytes, int start)
 	{
