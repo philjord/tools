@@ -2,7 +2,9 @@ package tools.io;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -16,7 +18,7 @@ public class FileChannelRAF implements IRandomAccessFile {
 	//private MappedByteBuffer mappedByteBuffer;
 
 	/**
-	 * getChannel() − method on any either FileInputStream, FileOutputStream or RandomAccessFile.
+	 * getChannel()   method on any either FileInputStream, FileOutputStream or RandomAccessFile.
 	 * 
 	 * @param file
 	 * @param mode
@@ -24,6 +26,7 @@ public class FileChannelRAF implements IRandomAccessFile {
 	 */
 	public FileChannelRAF(File file, String mode) throws IOException {
 
+		// some time I get a read-only file channel?
 		this.fileChannel = new FileInputStream(file).getChannel();
 
 		//ArchiveFile has more details on these, possibly not useful now FileChannels are in play
@@ -36,6 +39,10 @@ public class FileChannelRAF implements IRandomAccessFile {
 			mappedByteBuffer = fileChannel.map(mm, 0, fileChannel.size());
 			//TODO: then call this instead of filechannel
 		}*/
+	}
+	
+	public FileChannelRAF(RandomAccessFile file, String mode) throws IOException {		
+		this.fileChannel = file.getChannel();
 	}
 
 	public FileChannelRAF(FileChannel fileChannel) throws IOException {
