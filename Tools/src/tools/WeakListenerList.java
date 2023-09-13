@@ -3,11 +3,13 @@ package tools;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 public class WeakListenerList<E> implements Iterable<E>
 {
-	private ArrayList<WeakReference<E>> refs = new ArrayList<WeakReference<E>>();
+	private List<WeakReference<E>> refs = Collections.synchronizedList(new ArrayList<WeakReference<E>>());
 
 	private final ReferenceQueue<E> queue = new ReferenceQueue<E>();
 
