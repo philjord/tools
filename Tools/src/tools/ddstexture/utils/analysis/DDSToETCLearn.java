@@ -16,14 +16,17 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
+import java.text.DecimalFormat;
 import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import tools.ddstexture.utils.analysis.AnalysisData.NNBlockStyle;
 import tools.ddstexture.utils.analysis.dds.DDSDecompressor;
 import tools.ddstexture.utils.analysis.dds.NioImageBuffer;
+import tools.ddstexture.utils.analysis.etcpack.ETCNeuralNetwork;
 import tools.ddstexture.utils.analysis.etcpack.ETCPackNN;
 import tools.ddstexture.utils.analysis.etcpack.ETCPackNN.FORMAT;
 import tools.ddstexture.utils.analysis.ktx.KTXFormatException;
@@ -67,7 +70,7 @@ public class DDSToETCLearn {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				AnalysisData.changeToMode(AnalysisData.NNMode.TRAIN);
+				AnalysisData.setMode(AnalysisData.NNMode.TRAIN);
 			}
 		});
 		JButton predictButton = new JButton("Predict");
@@ -75,7 +78,7 @@ public class DDSToETCLearn {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				AnalysisData.changeToMode(AnalysisData.NNMode.PREDICT);
+				AnalysisData.setMode(AnalysisData.NNMode.PREDICT);
 			}
 		});
 		extraWin.getContentPane().add(trainButton);
@@ -109,14 +112,67 @@ public class DDSToETCLearn {
 			public void keyPressed(KeyEvent e) {
 				final int keyCode = e.getKeyCode();
 				if (keyCode == KeyEvent.VK_T) {
-					AnalysisData.changeToMode(AnalysisData.NNMode.TRAIN);
+					AnalysisData.setMode(AnalysisData.NNMode.TRAIN);
 				} else if (keyCode == KeyEvent.VK_P) {
-					AnalysisData.changeToMode(AnalysisData.NNMode.PREDICT);
+					AnalysisData.setMode(AnalysisData.NNMode.PREDICT);
 				}
 			}
 		});
 
 		extraWin.setVisible(true);
+		
+		playAbout();
+	}
+	
+	
+	public static void playAbout() {
+		
+		//https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
+		
+		// how about a little play play 
+		ETCNeuralNetwork nn = new ETCNeuralNetwork(4*4*4, 64, 5);
+		DecimalFormat df = new DecimalFormat("0.00");
+		
+		
+		byte[] nnInput1 = new byte[4*4*4];
+		byte[] nnInput2 = new byte[4*4*4];
+		//nnInput1[0] = 10;
+		
+		
+		for(int i = 0; i< 10;i++) {
+			int idx = (int)(Math.random()*64);
+			byte val = (byte)(Math.random()*256);
+			nnInput1[idx] = val;
+			
+			idx = (int)(Math.random()*64);
+			val = (byte)(Math.random()*256);
+			nnInput2[idx] = val;
+		}
+		
+		double[] out1 = new double[] {0,0,0,1,0};
+		double[] out2 = new double[] {0,1,0,0,0};
+		 
+		
+		// 10 training = no learning, 1000 = some learning 10000 = good learning
+		for(int i = 0; i <1000;i++) {
+			nn.train(nnInput1, out1);
+			nn.train(nnInput2, out2);
+		}
+				
+		
+		double[][] predictionOrd = nn.predict(nnInput1);
+		System.out.println( "predicted1 =3 0 " + df.format(predictionOrd[0][0])//
+				+ " 1 " + df.format(predictionOrd[1][0])//
+				+ " 2 " + df.format(predictionOrd[2][0])//
+				+ " 3 " + df.format(predictionOrd[3][0])//
+				+ " 4 " + df.format(predictionOrd[4][0]));
+
+		predictionOrd = nn.predict(nnInput2);
+		System.out.println( "predicted2 =1 0 " + df.format(predictionOrd[0][0])//
+				+ " 1 " + df.format(predictionOrd[1][0])//
+				+ " 2 " + df.format(predictionOrd[2][0])//
+				+ " 3 " + df.format(predictionOrd[3][0])//
+				+ " 4 " + df.format(predictionOrd[4][0]));
 
 	}
 	
@@ -131,7 +187,7 @@ public class DDSToETCLearn {
 					System.out.println("\tFile: " + fs [i]);
 					trainImage(fs [i], 5000);
 
-					//pause between each show to gve it a chance to show
+					//pause between each show to give it a chance to work
 					try {
 						Thread.sleep(200);
 					} catch (InterruptedException e) {

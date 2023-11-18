@@ -4,11 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 
-import tools.ddstexture.utils.analysis.AnalysisData.NNMode;
 import tools.ddstexture.utils.analysis.dds.DDSDecompressor.Color24;
 import tools.ddstexture.utils.analysis.etcpack.ETCNeuralNetwork;
  
@@ -28,9 +26,7 @@ public class AnalysisData {
 	public BlockData[][] outblockData;
 	
 
-	
-	
-	
+		
 	@Override
 	public String toString() {
 		String str =  "Name:"+imageName+","+imageWidth+","+imageHeight+","+blocksWide+","+blocksHigh;
@@ -110,14 +106,19 @@ public class AnalysisData {
 	public static int IDX_FastNN = 0;
 	public static int IDX_FastPerceptualNN = 1;
 	
-	public static enum NNName{ETC2Fast, ETC2FastPerceptual};
+	public static String[] NNName = new String[]{"ETC2Fast", "ETC2FastPerceptual"};
 	// 4x4 by 4 bytes so 16 ints
-	public static ETCNeuralNetwork nns[] = {new ETCNeuralNetwork(4*4*4, 64, 5), new ETCNeuralNetwork(4*4*4, 64, 5)};
+	//https://medium.com/geekculture/introduction-to-neural-network-2f8b8221fbd3 suggests 2/3 input nodes! or less than twice
+	public static ETCNeuralNetwork nns[] = {new ETCNeuralNetwork(4*4*4, 64*2, 5), new ETCNeuralNetwork(4*4*4, 64*2, 5)};
  
 	
-	public static enum NNBlockStyle{ETC2Fast, ETC2FastPerceptual};
-	
-	public static enum NNMode{TRAIN,PREDICT};
+	public static enum NNBlockStyle {
+		ETC2Fast, ETC2FastPerceptual
+	};
+
+	public static enum NNMode {
+		TRAIN, PREDICT
+	};
 	
 	public static NNMode nnMode = NNMode.TRAIN;
 	
@@ -125,8 +126,8 @@ public class AnalysisData {
 	public static int[] nnPredictSuccess = {0,0};
 	public static int[] nnPredictFailed = {0,0};
 	
-	public static int[] nnPredictionIdx = {0,0};
-	public static double[][][] nnPredictions = {new double[100000][], new double[100000][]};
+//	public static int[] nnPredictionIdx = {0,0};
+//	public static double[][][] nnPredictions = {new double[100000][], new double[100000][]};
 	
 	private static final DecimalFormat df = new DecimalFormat("0.00");
 
@@ -135,105 +136,85 @@ public class AnalysisData {
 		double[] output = new double[5];
 		output[best_mode] = 1;
 		
-		if(style == NNBlockStyle.ETC2FastPerceptual) {
-			synchronized (nns[IDX_FastPerceptualNN]) {						
-				if(nnMode == NNMode.TRAIN) {
-					//System.out.println("compressBlockETC2FastPerceptual trained");
-					
-					//nns[IDX_FastPerceptualNN].trainSoftmax(nnInput, output);
-					nns[IDX_FastPerceptualNN].train(nnInput, output);
-					
-					nnTrainedCount[IDX_FastPerceptualNN]++;
-				} else {
-					double[][] predictionOrd = nns[IDX_FastPerceptualNN].predictSoftmax(nnInput);
-					//System.out.println("compressBlockETC2FastPerceptual was predicted to be " + predictionOrd[0][0]+ " and was  " + best_mode.ordinal());
-					
-					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]]= new double[5];
-					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]][0]=predictionOrd[0][0]; 
-					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]][0]=predictionOrd[1][0]; 
-					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]][0]=predictionOrd[2][0]; 
-					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]][0]=predictionOrd[3][0]; 
-					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]][0]=predictionOrd[4][0]; 
-					nnPredictionIdx[IDX_FastPerceptualNN]++;
-					
-					double m = 0;
-					int maxidx = 0;
-					for(int i = 0 ; i < predictionOrd.length; i++)
-						if(predictionOrd[i][0]>m) {
-							m=predictionOrd[i][0];						
-							maxidx = i;
-						}
-					
-					System.out.println("compressBlockETC2FastPerceptual was "	+ best_mode + " predicted = " + maxidx
-										+ " " + (best_mode == maxidx ? "SUCCESS" : "FAIL   ")
+		
+		int nnIdx = IDX_FastPerceptualNN;
 
-										+ " and predicted 0 " + df.format(predictionOrd[0][0])//
-										+ " 1 " + df.format(predictionOrd[1][0])//
-										+ " 2 " + df.format(predictionOrd[2][0])//
-										+ " 3 " + df.format(predictionOrd[3][0])//
-										+ " 4 " + df.format(predictionOrd[4][0]));
-							
-					if(predictionOrd[best_mode][0] > 0.9)
-						nnPredictSuccess[IDX_FastPerceptualNN]++;
-					else
-						nnPredictFailed[IDX_FastPerceptualNN]++;
+		if (style == NNBlockStyle.ETC2FastPerceptual) {
+			nnIdx = IDX_FastPerceptualNN;
+		} else if (style == NNBlockStyle.ETC2Fast) {
+			nnIdx = IDX_FastNN;
+		}
+		
+		ETCNeuralNetwork nn = nns[nnIdx];
+		synchronized (nn) {						
+			if(nnMode == NNMode.TRAIN) {
+				//System.out.println("compressBlockETC2FastPerceptual trained");
+				
+				for(int i = 0; i <100;i++) {
+					nn.train(nnInput, output);
 				}
-			}
-		}else {
-			synchronized (nns[IDX_FastNN]) {						
-				if(nnMode == NNMode.TRAIN) {
-					//System.out.println("compressBlockETC2FastNN trained");
-					
-					//nns[IDX_FastNN].trainSoftmax(nnInput, output);
-					nns[IDX_FastNN].train(nnInput, output);
-					
-					nnTrainedCount[IDX_FastNN]++;
-				} else {
-					double[][] predictionOrd = nns[IDX_FastNN].predictSoftmax(nnInput);					
-					double m = 0;
-					int maxidx = 0;
-					for(int i = 0 ; i < predictionOrd.length; i++)
-						if(predictionOrd[i][0]>m) {
-							m=predictionOrd[i][0];						
-							maxidx = i;
-						}
-					
-					System.out.println("compressBlockETC2FastPerceptual was "+best_mode
-							+ " predicted = " + maxidx + " " + (best_mode == maxidx?"SUCCESS":"FAIL   ")
-							
-										+ " and predicted 0 " + df.format(predictionOrd [0] [0])//
-										+ " 1 " + df.format(predictionOrd [1] [0])//
-										+ " 2 " + df.format(predictionOrd [2] [0])//
-										+ " 3 " + df.format(predictionOrd [3] [0])//
-										+ " 4 " + df.format(predictionOrd [4] [0]));
-					
-					if(predictionOrd[best_mode][0] > 0.9)
-						nnPredictSuccess[IDX_FastNN]++;
-					else
-						nnPredictFailed[IDX_FastNN]++;
-				}
+				
+				nnTrainedCount[nnIdx]++;
+			} else {
+				double[][] predictionOrd = nn.predict(nnInput);
+				//System.out.println("compressBlockETC2FastPerceptual was predicted to be " + predictionOrd[0][0]+ " and was  " + best_mode.ordinal());
+				
+/*				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]]= new double[5];
+				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][0]=predictionOrd[0][0]; 
+				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][1]=predictionOrd[1][0]; 
+				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][2]=predictionOrd[2][0]; 
+				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][3]=predictionOrd[3][0]; 
+				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][4]=predictionOrd[4][0]; 
+				nnPredictionIdx[nnIdx]++;*/
+				
+				double m = 0;
+				int maxidx = 0;
+				for(int i = 0 ; i < predictionOrd.length; i++)
+					if(predictionOrd[i][0]>m) {
+						m=predictionOrd[i][0];						
+						maxidx = i;
+					}
+				
+				System.out.println(""	+ NNName[nnIdx] + " was " + best_mode + " predicted = " + maxidx + " "
+									+ (best_mode == maxidx ? "SUCCESS" : "FAIL   ")
+
+									+ " and predicted 0 " + df.format(predictionOrd[0][0])//
+									+ " 1 " + df.format(predictionOrd[1][0])//
+									+ " 2 " + df.format(predictionOrd[2][0])//
+									+ " 3 " + df.format(predictionOrd[3][0])//
+									+ " 4 " + df.format(predictionOrd[4][0]));
+						
+				if(best_mode == maxidx)
+					nnPredictSuccess[nnIdx]++;
+				else
+					nnPredictFailed[nnIdx]++;
 			}
 		}
+		
+		
+		
 		
 	}
 	
 	public void outputNNStats()
 	{
-		if(AnalysisData.nnMode == NNMode.PREDICT) {
-			for(int i = 0; i < 2; i++) {
-				System.out.println("i " + NNName.values()[i]);
-			System.out.println("nnTrainedCount " + AnalysisData.nnTrainedCount[i]
-					+" nnPredictSuccess " + AnalysisData.nnPredictSuccess[i]
-					+" nnPredictFailed " + AnalysisData.nnPredictFailed[i]);
-			System.out.println("Accuracy " + (AnalysisData.nnPredictSuccess[i] /((double)AnalysisData.nnPredictFailed[i]+
-												(double)AnalysisData.nnPredictSuccess[i])));	
+		if (AnalysisData.nnMode == NNMode.PREDICT) {
+			for (int i = 0; i < 2; i++) {
+				System.out.println("" + i + " " + NNName[i]);
+				System.out.println("nnTrainedCount "	+ AnalysisData.nnTrainedCount[i] + " nnPredictSuccess "
+									+ AnalysisData.nnPredictSuccess[i] + " nnPredictFailed "
+									+ AnalysisData.nnPredictFailed[i]);
+				if(AnalysisData.nnTrainedCount[i]  > 0)
+					System.out.println("Accuracy " + df.format((AnalysisData.nnPredictSuccess[i]
+													/ ((double)AnalysisData.nnPredictFailed[i]
+														+ (double)AnalysisData.nnPredictSuccess[i]))));
 			}
 		}
 	}
 
-	public static void changeToMode(NNMode mode) {
+	public static void setMode(NNMode mode) {
 		AnalysisData.nnMode = mode;
-		System.out.println("changing to "+mode.name()+" now");		
+		System.out.println("setMode "+mode.name());		
 	}
 	
 	
