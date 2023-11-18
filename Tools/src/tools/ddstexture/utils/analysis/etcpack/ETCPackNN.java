@@ -8622,16 +8622,16 @@ void compressBlockETC2Fast(byte[] img, byte[] alphaimg, byte[] imgdec,int width,
 	
 	
 
-	double[] nnInput = new double[16];
+	byte[] nnInput = new byte[16*4];
 	int idx = 0;
 	for (int y = 0; y < BLOCKHEIGHT; ++y) 
 	{
 		for (int x = 0; x < BLOCKWIDTH; ++x) 
 		{			
-			nnInput[idx++] = (0 << 24) 
-					| (img[3*((starty+y)*width+startx+x)+R] << 16) 
-					| (img[3*((starty+y)*width+startx+x)+G] << 8) 
-					| (img[3*((starty+y)*width+startx+x)+B] << 0);			
+			nnInput[idx++] = (0 << 24) ;
+			nnInput[idx++] = (byte)(img[3*((starty+y)*width+startx+x)+R] << 16); 
+			nnInput[idx++] = (byte)(img[3*((starty+y)*width+startx+x)+G] << 8); 
+			nnInput[idx++] = (byte)(img[3*((starty+y)*width+startx+x)+B] << 0);			
 			 
 		}
 	}
@@ -8780,16 +8780,17 @@ void compressBlockETC2FastPerceptual(byte[] img, byte[] imgdec,int width,int hei
 	
 	
 	//Neural
-	double[] nnInput = new double[16];
+	byte[] nnInput = new byte[16*4];
 	int idx = 0;
 	for (int y = 0; y < BLOCKHEIGHT; ++y) {
 		for (int x = 0; x < BLOCKWIDTH; ++x) {
 			//int r = img[3*((starty+y)*width+startx+x)+R];
 			//int g = img[3*((starty+y)*width+startx+x)+G];
 			//int b = img[3*((starty+y)*width+startx+x)+B];
-			nnInput [idx++] = (0 << 24) | (img [3 * ((starty + y) * width + startx + x) + R] << 16)
-								| (img [3 * ((starty + y) * width + startx + x) + G] << 8)
-								| (img [3 * ((starty + y) * width + startx + x) + B] << 0);
+			nnInput [idx++] = (0 << 24);
+			nnInput [idx++] = (byte)(img [3 * ((starty + y) * width + startx + x) + R] << 16);
+			nnInput [idx++] = (byte)(img [3 * ((starty + y) * width + startx + x) + G] << 8);
+			nnInput [idx++] = (byte)(img [3 * ((starty + y) * width + startx + x) + B] << 0);
 		}
 	}
 		

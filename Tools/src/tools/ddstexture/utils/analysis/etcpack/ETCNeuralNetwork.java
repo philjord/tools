@@ -41,7 +41,7 @@ public class ETCNeuralNetwork {
 		bias_o.fromByteBuffer(bb);
 	}
 
-	public double[][] predict(double[] X) {
+	public double[][] predict(byte[] X) {
 		Matrix input = Matrix.fromArray(X);
 		Matrix hidden = Matrix.multiply(weights_ih, input);
 		hidden.add(bias_h);
@@ -53,7 +53,7 @@ public class ETCNeuralNetwork {
 
 		return output.toArray();
 	}
-	public double[][] predictSoftmax(double[] X) {
+	public double[][] predictSoftmax(byte[] X) {
 		Matrix input = Matrix.fromArray(X);
 		Matrix hidden = Matrix.multiply(weights_ih, input);
 		hidden.add(bias_h);
@@ -66,7 +66,7 @@ public class ETCNeuralNetwork {
 		return output.toArray();
 	}
 
-	public void train(double[] X, double[] Y) {
+	public void train(byte[] X, double[] Y) {
 		Matrix input = Matrix.fromArray(X);
 		Matrix hidden = Matrix.multiply(weights_ih, input);
 		hidden.add(bias_h);
@@ -104,7 +104,7 @@ public class ETCNeuralNetwork {
 
 	}
 	
-	public void trainSoftmax(double[] X, double[] Y) {
+	public void trainSoftmax(byte[] X, double[] Y) {
 		Matrix input = Matrix.fromArray(X);
 		Matrix hidden = Matrix.multiply(weights_ih, input);
 		hidden.add(bias_h);
@@ -112,7 +112,8 @@ public class ETCNeuralNetwork {
 
 		Matrix output = Matrix.multiply(weights_ho, hidden);
 		output.add(bias_o);
-		output.softmax();//output.sigmoid();
+		output.softmax();
+		//output.sigmoid();
 
 		Matrix target = Matrix.fromArray(Y);
 
@@ -192,7 +193,7 @@ public class ETCNeuralNetwork {
 
 		public void add(Matrix m) {
 			if (cols != m.cols || rows != m.rows) {
-				System.out.println("Shape Mismatch");
+				new Throwable("Shape Mismatch").printStackTrace();
 				return;
 			}
 
@@ -276,24 +277,21 @@ public class ETCNeuralNetwork {
 			softmax(this.data);
 		}
 		
-		public static void softmax(double[][] in) {
-			
-			//note there is a slim chance this should be cols iter 
-			for (int i = 0; i < in.length; i++) {
-				softmaxArray(in[i]);
-			}
-		}
 		//https://stackoverflow.com/questions/57631507/how-can-i-take-the-derivative-of-the-softmax-output-in-back-prop
 		//https://stats.stackexchange.com/questions/453539/softmax-derivative-implementation
-		public static void softmaxArray(double[] input) {			
+		public static void softmax(double[][] input) {
+			
+			//softmax for output is a 5rowx1col matrix so the softmax goes down the single column
+			//a row iterator as it were
+			
 			double sum = 0;
 			for (int n = 0; n < input.length; n++) {
-				input [n] = Math.exp(input [n]);
-				sum += input [n];
+				input [n][0] = Math.exp(input [n][0]);
+				sum += input [n][0];
 			}
 			
 			for (int n = 0; n < input.length; n++) {
-				input [n] = input [n] / sum;
+				input [n][0] = input [n][0] / sum;
 			}
 		}
 
@@ -303,33 +301,29 @@ public class ETCNeuralNetwork {
 		//https://levelup.gitconnected.com/killer-combo-softmax-and-cross-entropy-5907442f60ba
 		//https://stats.stackexchange.com/questions/453539/softmax-derivative-implementation
 		public Matrix dsoftmax() {	
-			
-			// no idea at all, but error has the right values in it so perhaps just 1's?
+			// I'm told d of softmax is simply answer-target, which my error matrix from training has so 
+			// just 1's will cause the gradient matrix to be simply error
 			Matrix temp = new Matrix(rows, cols);
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < cols; j++)
 					temp.data [i] [j] = 1;
 			}
 			return temp;
-			
-			
-			//note there is a slim chance this should be cols iter 
-			//for (int i = 0; i < rows; i++) {
-			//	dsoftmaxArray(this.data [i]);
-			//}
 		}
-		public static double[][] dsoftmaxArray(double[] input) {	
+		
+		//unused currently
+		public static double[][] dsoftmaxArray(double[][] input) {	
 			int n = input.length;
-			double[][] out = new double[n][n];
+			double[][] out = new double[n][1];
 			
-			double[] p = new double[n];
+			double[][] p = new double[n][1];
 			System.arraycopy(input, 0, p, 0, n);
-			softmaxArray(p);
+			softmax(p);
 			
 		 
 			for (int i = 0; i < n; i++) {				 
 				for (int j = 0; j < n; j++) {
-					out[i][j] = p[i]*(i==j?1:0 - p[j]); 
+					out[i][j] = p[i][0]*(i==j?1:0 - p[j][0]); 
 				}
 			}
 			
@@ -342,6 +336,14 @@ public class ETCNeuralNetwork {
 			Matrix temp = new Matrix(x.length, 1);
 			for (int i = 0; i < x.length; i++)
 				temp.data [i] [0] = x [i];
+			return temp;
+
+		}
+		
+		public static Matrix fromArray(byte[] x) {
+			Matrix temp = new Matrix(x.length, 1);
+			for (int i = 0; i < x.length; i++)
+				temp.data [i] [0] = Byte.toUnsignedInt(x [i]);
 			return temp;
 
 		}

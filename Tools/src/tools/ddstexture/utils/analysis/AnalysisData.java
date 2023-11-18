@@ -112,7 +112,7 @@ public class AnalysisData {
 	
 	public static enum NNName{ETC2Fast, ETC2FastPerceptual};
 	// 4x4 by 4 bytes so 16 ints
-	public static ETCNeuralNetwork nns[] = {new ETCNeuralNetwork(16, 5000, 5), new ETCNeuralNetwork(16, 5000, 5)};
+	public static ETCNeuralNetwork nns[] = {new ETCNeuralNetwork(4*4*4, 64, 5), new ETCNeuralNetwork(4*4*4, 64, 5)};
  
 	
 	public static enum NNBlockStyle{ETC2Fast, ETC2FastPerceptual};
@@ -130,7 +130,7 @@ public class AnalysisData {
 	
 	private static final DecimalFormat df = new DecimalFormat("0.00");
 
-	public void blockComplete(double[] nnInput, int best_mode, NNBlockStyle style) {
+	public void blockComplete(byte[] nnInput, int best_mode, NNBlockStyle style) {
 		
 		double[] output = new double[5];
 		output[best_mode] = 1;
@@ -140,11 +140,12 @@ public class AnalysisData {
 				if(nnMode == NNMode.TRAIN) {
 					//System.out.println("compressBlockETC2FastPerceptual trained");
 					
+					//nns[IDX_FastPerceptualNN].trainSoftmax(nnInput, output);
 					nns[IDX_FastPerceptualNN].train(nnInput, output);
 					
 					nnTrainedCount[IDX_FastPerceptualNN]++;
 				} else {
-					double[][] predictionOrd = nns[IDX_FastPerceptualNN].predict(nnInput);
+					double[][] predictionOrd = nns[IDX_FastPerceptualNN].predictSoftmax(nnInput);
 					//System.out.println("compressBlockETC2FastPerceptual was predicted to be " + predictionOrd[0][0]+ " and was  " + best_mode.ordinal());
 					
 					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]]= new double[5];
@@ -155,11 +156,22 @@ public class AnalysisData {
 					nnPredictions[IDX_FastPerceptualNN][nnPredictionIdx[IDX_FastPerceptualNN]][0]=predictionOrd[4][0]; 
 					nnPredictionIdx[IDX_FastPerceptualNN]++;
 					
-					System.out.println("compressBlockETC2FastPerceptual was "+best_mode+" and predicted 0 " 
-							+ df.format(predictionOrd[0][0])+ " 1 " +df.format(predictionOrd[1][0])
-									+  " 2 " +df.format(predictionOrd[2][0])
-											 + " 3 " +df.format(predictionOrd[3][0])
-													   + " 4 " +df.format(predictionOrd[4][0]) );
+					double m = 0;
+					int maxidx = 0;
+					for(int i = 0 ; i < predictionOrd.length; i++)
+						if(predictionOrd[i][0]>m) {
+							m=predictionOrd[i][0];						
+							maxidx = i;
+						}
+					
+					System.out.println("compressBlockETC2FastPerceptual was "	+ best_mode + " predicted = " + maxidx
+										+ " " + (best_mode == maxidx ? "SUCCESS" : "FAIL   ")
+
+										+ " and predicted 0 " + df.format(predictionOrd[0][0])//
+										+ " 1 " + df.format(predictionOrd[1][0])//
+										+ " 2 " + df.format(predictionOrd[2][0])//
+										+ " 3 " + df.format(predictionOrd[3][0])//
+										+ " 4 " + df.format(predictionOrd[4][0]));
 							
 					if(predictionOrd[best_mode][0] > 0.9)
 						nnPredictSuccess[IDX_FastPerceptualNN]++;
@@ -172,16 +184,28 @@ public class AnalysisData {
 				if(nnMode == NNMode.TRAIN) {
 					//System.out.println("compressBlockETC2FastNN trained");
 					
+					//nns[IDX_FastNN].trainSoftmax(nnInput, output);
 					nns[IDX_FastNN].train(nnInput, output);
 					
 					nnTrainedCount[IDX_FastNN]++;
 				} else {
-					double[][] predictionOrd = nns[IDX_FastNN].predict(nnInput);					
-					System.out.println("compressBlockETC2Fast was "+best_mode+" and predicted 0 " 
-							+ df.format(predictionOrd[0][0])+ " 1 " +df.format(predictionOrd[1][0])
-							+  " 2 " +df.format(predictionOrd[2][0])
-									 + " 3 " +df.format(predictionOrd[3][0])
-											   + " 4 " +df.format(predictionOrd[4][0]) );
+					double[][] predictionOrd = nns[IDX_FastNN].predictSoftmax(nnInput);					
+					double m = 0;
+					int maxidx = 0;
+					for(int i = 0 ; i < predictionOrd.length; i++)
+						if(predictionOrd[i][0]>m) {
+							m=predictionOrd[i][0];						
+							maxidx = i;
+						}
+					
+					System.out.println("compressBlockETC2FastPerceptual was "+best_mode
+							+ " predicted = " + maxidx + " " + (best_mode == maxidx?"SUCCESS":"FAIL   ")
+							
+										+ " and predicted 0 " + df.format(predictionOrd [0] [0])//
+										+ " 1 " + df.format(predictionOrd [1] [0])//
+										+ " 2 " + df.format(predictionOrd [2] [0])//
+										+ " 3 " + df.format(predictionOrd [3] [0])//
+										+ " 4 " + df.format(predictionOrd [4] [0]));
 					
 					if(predictionOrd[best_mode][0] > 0.9)
 						nnPredictSuccess[IDX_FastNN]++;

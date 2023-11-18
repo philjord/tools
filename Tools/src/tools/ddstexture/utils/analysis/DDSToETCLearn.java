@@ -34,11 +34,11 @@ import tools.swing.DetailsFileChooser;
  * @author philip
  *
  */
-public class DDSToETCStats {
+public class DDSToETCLearn {
 	private static Preferences prefs;
 
 	public static void main(String[] args) {
-		prefs = Preferences.userNodeForPackage(DDSToETCStats.class);
+		prefs = Preferences.userNodeForPackage(DDSToETCLearn.class);
 
 		DetailsFileChooser dfc = new DetailsFileChooser(prefs.get("DDSToTexture", ""),
 				new DetailsFileChooser.Listener() {
@@ -102,7 +102,7 @@ public class DDSToETCStats {
 		extraWin.getContentPane().add(saveButton);
 		extraWin.getContentPane().add(loadButton);
 		extraWin.invalidate();
-		extraWin.setSize(100, 100);
+		extraWin.setSize(600, 100);
 
 		extraWin.addKeyListener(new KeyAdapter() {
 			@Override
@@ -155,7 +155,7 @@ public class DDSToETCStats {
 			//showImageInShape(filename, new FileInputStream(file));
 		} catch (IOException e) {
 			System.out
-					.println("" + DDSToETCStats.class + " had a  IO problem with " + filename + " : " + e.getMessage());
+					.println("" + DDSToETCLearn.class + " had a  IO problem with " + filename + " : " + e.getMessage());
 		}
 
 	}
@@ -173,7 +173,7 @@ public class DDSToETCStats {
 					ddsImage.debugPrint();
 				} catch (IOException e) {
 					System.out.println(
-							"" + DDSToETCStats.class + " had a  IO problem with " + filename + " : " + e.getMessage());
+							"" + DDSToETCLearn.class + " had a  IO problem with " + filename + " : " + e.getMessage());
 					return;
 				}
 
