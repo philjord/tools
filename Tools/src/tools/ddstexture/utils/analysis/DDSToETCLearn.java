@@ -10,12 +10,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.nio.Buffer;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.util.prefs.Preferences;
 
@@ -23,7 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import tools.ddstexture.utils.analysis.AnalysisData.NNBlockStyle;
+import tools.ddstexture.utils.analysis.AnalysisData.NNMode;
 import tools.ddstexture.utils.analysis.dds.DDSDecompressor;
 import tools.ddstexture.utils.analysis.dds.NioImageBuffer;
 import tools.ddstexture.utils.analysis.etcpack.ETCNeuralNetwork;
@@ -106,6 +103,7 @@ public class DDSToETCLearn {
 		extraWin.getContentPane().add(loadButton);
 		extraWin.invalidate();
 		extraWin.setSize(600, 100);
+		extraWin.setLocation(600, 0);
 
 		extraWin.addKeyListener(new KeyAdapter() {
 			@Override
@@ -121,7 +119,7 @@ public class DDSToETCLearn {
 
 		extraWin.setVisible(true);
 		
-		playAbout();
+//		playAbout();
 	}
 	
 	
@@ -130,50 +128,71 @@ public class DDSToETCLearn {
 		//https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
 		
 		// how about a little play play 
-		ETCNeuralNetwork nn = new ETCNeuralNetwork(4*4*4, 64, 5);
+		ETCNeuralNetwork nn = new ETCNeuralNetwork(4*4*4, (int)(64*0.75), 1);
 		DecimalFormat df = new DecimalFormat("0.00");
 		
 		
-		byte[] nnInput1 = new byte[4*4*4];
-		byte[] nnInput2 = new byte[4*4*4];
+		double[][] nnInputs = new double[10][4*4*4];
+		 
 		//nnInput1[0] = 10;
 		
 		
 		for(int i = 0; i< 10;i++) {
-			int idx = (int)(Math.random()*64);
-			byte val = (byte)(Math.random()*256);
-			nnInput1[idx] = val;
-			
-			idx = (int)(Math.random()*64);
-			val = (byte)(Math.random()*256);
-			nnInput2[idx] = val;
+			for(int j = 0; j< 10;j++) {
+				int idx = (int)(Math.random()*64);
+				
+				double val = Math.random()*0.5;
+				
+				//low idx go high colors
+				if(i< 5)
+					val +=  0.5 ;
+				
+				nnInputs[i][idx] = val;			 
+			}
 		}
 		
-		double[] out1 = new double[] {0,0,0,1,0};
-		double[] out2 = new double[] {0,1,0,0,0};
+		double[][] outs = new double[][] {new double[] {1.0},
+			new double[] {0.90},
+			new double[] {0.80},
+			new double[] {0.7},
+			new double[] {0.6},
+			new double[] {0.1},
+			new double[] {0.2},
+			new double[] {0.3},
+			new double[] {0.4},
+			new double[] {0.0} };
+		
 		 
 		
 		// 10 training = no learning, 1000 = some learning 10000 = good learning
-		for(int i = 0; i <1000;i++) {
-			nn.train(nnInput1, out1);
-			nn.train(nnInput2, out2);
+		for(int x = 0; x <10000;x++) {
+			for(int i = 0; i< 10;i++) {
+				nn.train(nnInputs[i], outs[i]);			 
+			}
 		}
 				
+		for(int i = 0; i< 10;i++) {
+			double[][] predictionOrd = nn.predict(nnInputs[i]);
+			System.out.println( "predict on trained ="+outs[i][0] + " " + df.format(predictionOrd[0][0])); 			
+		}
 		
-		double[][] predictionOrd = nn.predict(nnInput1);
-		System.out.println( "predicted1 =3 0 " + df.format(predictionOrd[0][0])//
-				+ " 1 " + df.format(predictionOrd[1][0])//
-				+ " 2 " + df.format(predictionOrd[2][0])//
-				+ " 3 " + df.format(predictionOrd[3][0])//
-				+ " 4 " + df.format(predictionOrd[4][0]));
-
-		predictionOrd = nn.predict(nnInput2);
-		System.out.println( "predicted2 =1 0 " + df.format(predictionOrd[0][0])//
-				+ " 1 " + df.format(predictionOrd[1][0])//
-				+ " 2 " + df.format(predictionOrd[2][0])//
-				+ " 3 " + df.format(predictionOrd[3][0])//
-				+ " 4 " + df.format(predictionOrd[4][0]));
-
+		// now crazy it up!
+		nnInputs = new double[10][4*4*4];
+		for(int i = 0; i< 10;i++) {
+			for(int j = 0; j< 10;j++) {
+				int idx = (int)(Math.random()*64);
+				double val = Math.random()*0.5;
+				
+				//low idx go high colors
+				if(i< 5)
+					val +=  0.5 ;
+				nnInputs[i][idx] = val;			 
+			}
+		}
+		for(int i = 0; i< 10;i++) {
+			double[][] predictionOrd = nn.predict(nnInputs[i]);
+			System.out.println( "predict on rando ="+ i  + " " + df.format(predictionOrd[0][0])); 			
+		}
 	}
 	
 	
@@ -282,11 +301,16 @@ public class DDSToETCLearn {
 						format = FORMAT.ETC2PACKAGE_sRGBA;
 					}
 					ETCPackNN ep = new ETCPackNN();
+					ep.nnMode = AnalysisData.nnMode;
 					ByteBuffer ktxBB = null;
 					try {
-
-						ktxBB = ep.compressImageToByteBuffer(img, imgalpha, ddsImage.getWidth(), ddsImage.getHeight(),
-								format, false); //NOTE FALSE!!
+						// let's compress it 10 times, as traingin data
+						int iters = AnalysisData.nnMode == NNMode.TRAIN ? 100 :1;
+						
+						for(int i = 0; i < iters; i++) {
+							ktxBB = ep.compressImageToByteBuffer(img, imgalpha, ddsImage.getWidth(), ddsImage.getHeight(),
+									format, false); //NOTE FALSE!!
+						}
 						KTXImage ktxImage = new KTXImage(ktxBB);
 					} catch (KTXFormatException e) {
 						System.out.println("DDS to KTX image: " + filename);

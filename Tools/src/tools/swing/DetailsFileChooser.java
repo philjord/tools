@@ -4,8 +4,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JFileChooser;
@@ -36,6 +34,7 @@ public class DetailsFileChooser extends JFileChooser
 
 		addActionListener(new ActionListener()
 		{
+			@Override
 			public void actionPerformed(ActionEvent e)
 			{
 				if (e.getActionCommand().equals(JFileChooser.CANCEL_SELECTION))
@@ -50,7 +49,9 @@ public class DetailsFileChooser extends JFileChooser
 			}
 		});
 
-		addPropertyChangeListener(new PropertyChangeListener()
+		
+		//replaced with override Set
+/*		addPropertyChangeListener(new PropertyChangeListener()
 		{
 			public void propertyChange(PropertyChangeEvent e)
 			{
@@ -65,7 +66,7 @@ public class DetailsFileChooser extends JFileChooser
 				}
 
 			}
-		});
+		});*/
 
 		//TODO: VERY POOR FORM
 		// pre click the details view
@@ -97,4 +98,18 @@ public class DetailsFileChooser extends JFileChooser
 
 		public void directorySelected(File dir);
 	}
+	
+	/** override 
+	 * to allow any file click to be caught so we can click the same file twice
+	 */
+	@Override
+	public void setSelectedFile(File file) {
+		super.setSelectedFile(file);
+		
+		if (!file.isDirectory())
+		{
+			listener.fileSelected(file);
+		}
+         
+    }
 }

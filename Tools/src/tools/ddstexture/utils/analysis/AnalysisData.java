@@ -1,11 +1,16 @@
 package tools.ddstexture.utils.analysis;
 
+import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import tools.ddstexture.utils.analysis.dds.DDSDecompressor.Color24;
 import tools.ddstexture.utils.analysis.etcpack.ETCNeuralNetwork;
@@ -109,7 +114,7 @@ public class AnalysisData {
 	public static String[] NNName = new String[]{"ETC2Fast", "ETC2FastPerceptual"};
 	// 4x4 by 4 bytes so 16 ints
 	//https://medium.com/geekculture/introduction-to-neural-network-2f8b8221fbd3 suggests 2/3 input nodes! or less than twice
-	public static ETCNeuralNetwork nns[] = {new ETCNeuralNetwork(4*4*4, 64*2, 5), new ETCNeuralNetwork(4*4*4, 64*2, 5)};
+	public static ETCNeuralNetwork nns[] = {new ETCNeuralNetwork(4*4*4, 64, 1), new ETCNeuralNetwork(4*4*4, 64, 1)};
  
 	
 	public static enum NNBlockStyle {
@@ -126,16 +131,41 @@ public class AnalysisData {
 	public static int[] nnPredictSuccess = {0,0};
 	public static int[] nnPredictFailed = {0,0};
 	
-//	public static int[] nnPredictionIdx = {0,0};
-//	public static double[][][] nnPredictions = {new double[100000][], new double[100000][]};
+
+	// 2 nn x 5 modes by 100 rounded opiton as an int count
+	public static int[][][] nnPredictions = new int[2][5][100];
+	public static int[][] targetTrainedCount = new int[2][5];
 	
 	private static final DecimalFormat df = new DecimalFormat("0.00");
+	
+	// this suggest that image classification whilst compressed is to poor to work
+	//https://sigport.org/sites/default/files/docs/DCC.pdf
+	
+	
+	// in fact quick etc is my best option
+	//https://nahjaeho.github.io/papers/SA20/QUICKETC2_SA20.pdf
+	//https://nahjaeho.github.io/papers/SA20/QUICKETC2_SA20_slides.pdf
+	//https://github.com/wolfpld/etcpak/commit/da85020e690890f4356d42ab5802e4f957f220fd#diff-8e19e1bd6d1d238c9a2a23d0199e8fe248c88023f64439b1b7444085fa6c1c24
+	
+	QuantizedLookUp qlu = new QuantizedLookUp();
+	
 
-	public void blockComplete(byte[] nnInput, int best_mode, NNBlockStyle style) {
+	/**
+	 * 
+	 * @param nnInput 64 byte being 4x4 ints
+	 * @param best_mode 1,2,3,4 only
+	 * @param style TRAIN or PREDICT
+	 */
+	public void blockComplete(byte[] nnInput, int best_mode, NNBlockStyle style, NNMode mode) {
+ 		
 		
-		double[] output = new double[5];
-		output[best_mode] = 1;
+		double[] targetVal = new double[] {best_mode/4.0};
+
 		
+		double[] input = new double[nnInput.length];		
+		for(int i = 0; i <nnInput.length;i++) {
+			input[i] = ((nnInput[i]+128.0)/256.0);
+		}
 		
 		int nnIdx = IDX_FastPerceptualNN;
 
@@ -147,53 +177,41 @@ public class AnalysisData {
 		
 		ETCNeuralNetwork nn = nns[nnIdx];
 		synchronized (nn) {						
-			if(nnMode == NNMode.TRAIN) {
+			if(mode == NNMode.TRAIN) {
 				//System.out.println("compressBlockETC2FastPerceptual trained");
 				
-				for(int i = 0; i <100;i++) {
-					nn.train(nnInput, output);
-				}
+//				nn.train(input, targetVal);
+				
+				qlu.train(nnInput, best_mode);
 				
 				nnTrainedCount[nnIdx]++;
 			} else {
-				double[][] predictionOrd = nn.predict(nnInput);
-				//System.out.println("compressBlockETC2FastPerceptual was predicted to be " + predictionOrd[0][0]+ " and was  " + best_mode.ordinal());
+				double[][] predictionOrd = nn.predict(input);
+				double prediction = predictionOrd[0][0];
 				
-/*				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]]= new double[5];
-				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][0]=predictionOrd[0][0]; 
-				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][1]=predictionOrd[1][0]; 
-				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][2]=predictionOrd[2][0]; 
-				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][3]=predictionOrd[3][0]; 
-				nnPredictions[nnIdx][nnPredictionIdx[nnIdx]][4]=predictionOrd[4][0]; 
-				nnPredictionIdx[nnIdx]++;*/
+				boolean success = (Math.abs(targetVal[0] - prediction) < 0.1);
 				
-				double m = 0;
-				int maxidx = 0;
-				for(int i = 0 ; i < predictionOrd.length; i++)
-					if(predictionOrd[i][0]>m) {
-						m=predictionOrd[i][0];						
-						maxidx = i;
-					}
 				
-				System.out.println(""	+ NNName[nnIdx] + " was " + best_mode + " predicted = " + maxidx + " "
-									+ (best_mode == maxidx ? "SUCCESS" : "FAIL   ")
-
-									+ " and predicted 0 " + df.format(predictionOrd[0][0])//
-									+ " 1 " + df.format(predictionOrd[1][0])//
-									+ " 2 " + df.format(predictionOrd[2][0])//
-									+ " 3 " + df.format(predictionOrd[3][0])//
-									+ " 4 " + df.format(predictionOrd[4][0]));
+				
+				byte qlup = qlu.predict(nnInput);
+				
+				
+				System.out.println(""	+ NNName[nnIdx] + " was " + best_mode 
+						+ " targetVal[0] = " + df.format(targetVal[0]) + " "
+									+ (success ? "SUCCESS" : "FAIL   ")
+									+ " and predicted 0 " + df.format(prediction) 
+									+ " qlup " + qlup);
 						
-				if(best_mode == maxidx)
+				if(success)
 					nnPredictSuccess[nnIdx]++;
 				else
 					nnPredictFailed[nnIdx]++;
+				
+								
+				nnPredictions[nnIdx][best_mode][(int)(prediction*100)]++;
+				targetTrainedCount[nnIdx][best_mode]++;
 			}
-		}
-		
-		
-		
-		
+		}		
 	}
 	
 	public void outputNNStats()
@@ -209,8 +227,48 @@ public class AnalysisData {
 													/ ((double)AnalysisData.nnPredictFailed[i]
 														+ (double)AnalysisData.nnPredictSuccess[i]))));
 			}
+			
+			// if no windows showing them set them up
+			if (statsArea == null) {
+				JFrame nnModelWin = new JFrame("NN Model");
+				nnModelWin.getContentPane().setLayout(new GridLayout(1, 1));
+
+				JTextArea modelArea = new JTextArea();
+				nnModelWin.getContentPane().add(new JScrollPane(modelArea));
+
+				nnModelWin.setSize(400, 200);
+				nnModelWin.setVisible(true);
+
+				JFrame statsWin = new JFrame("Stats");
+				statsWin.getContentPane().setLayout(new GridLayout(1, 1));
+
+				statsArea = new JTextArea();
+				statsWin.getContentPane().add(new JScrollPane(statsArea));
+				statsWin.setSize(600, 1200);
+				statsWin.setVisible(true);
+
+			}
+			
+			// replace the output text
+			String statsOutputString = "Stats:";
+			statsOutputString += "Model\tValue\tTarget0\tTarget1\tTarget2\tTarget3\tTarget4\n";
+			for (int nn = 0; nn < 2; nn++) {
+				statsOutputString += "\t\t" + targetTrainedCount[nn][0] + "\t"
+							+ targetTrainedCount[nn][1] + "\t" + targetTrainedCount[nn][2] + "\t"
+							+ targetTrainedCount[nn][3] + "\t" + targetTrainedCount[nn][4] + "\n";
+				for (int i = 0; i < 100; i++) {
+					statsOutputString += "" + nn + "\t" + i + "\t" + nnPredictions[nn][0][i] + "\t"
+											+ nnPredictions[nn][1][i] + "\t" + nnPredictions[nn][2][i] + "\t"
+											+ nnPredictions[nn][3][i] + "\t" + nnPredictions[nn][4][i] + "\n";
+				}
+			}
+						
+			statsArea.setText(statsOutputString);			
 		}
 	}
+	private static JTextArea statsArea;
+	
+	
 
 	public static void setMode(NNMode mode) {
 		AnalysisData.nnMode = mode;

@@ -10,6 +10,7 @@ import java.util.Random;
 import tools.ddstexture.utils.analysis.AnalysisData;
 import tools.ddstexture.utils.analysis.AnalysisData.ETC2;
 import tools.ddstexture.utils.analysis.AnalysisData.NNBlockStyle;
+import tools.ddstexture.utils.analysis.AnalysisData.NNMode;
 import tools.ddstexture.utils.analysis.etcpack.TargaReader.ImgData;
 
 // from here
@@ -75,7 +76,7 @@ import tools.ddstexture.utils.analysis.etcpack.TargaReader.ImgData;
 //typedef short int16;
 
 public class ETCPackNN {	
-
+	public NNMode nnMode;
 	
 	
 	//Image.cxx cut out, see readSrcFile
@@ -8620,22 +8621,26 @@ void compressBlockETC2Fast(byte[] img, byte[] alphaimg, byte[] imgdec,int width,
 		break;
 	}
 	
+
+		
 	
 
 	byte[] nnInput = new byte[16*4];
 	int idx = 0;
-	for (int y = 0; y < BLOCKHEIGHT; ++y) 
-	{
-		for (int x = 0; x < BLOCKWIDTH; ++x) 
-		{			
-			nnInput[idx++] = (0 << 24) ;
-			nnInput[idx++] = (byte)(img[3*((starty+y)*width+startx+x)+R] << 16); 
-			nnInput[idx++] = (byte)(img[3*((starty+y)*width+startx+x)+G] << 8); 
-			nnInput[idx++] = (byte)(img[3*((starty+y)*width+startx+x)+B] << 0);			
-			 
+	for (int y = 0; y < BLOCKHEIGHT; ++y) {
+		for (int x = 0; x < BLOCKWIDTH; ++x) {		
+
+			nnInput[idx++] = (0 >> 24) ;
+			nnInput[idx++] = img[3*((starty+y)*width+startx+x)+R]; 
+			nnInput[idx++] = img[3*((starty+y)*width+startx+x)+G]; 
+			nnInput[idx++] = img[3*((starty+y)*width+startx+x)+B];				 
 		}
 	}
-	analysisData.blockComplete(nnInput, best_mode.ordinal(), NNBlockStyle.ETC2Fast);
+	
+
+	
+	
+	analysisData.blockComplete(nnInput, best_mode.ordinal(), NNBlockStyle.ETC2Fast, nnMode);
 
 }
 
@@ -8770,7 +8775,7 @@ void compressBlockETC2FastPerceptual(byte[] img, byte[] imgdec,int width,int hei
 		blockData.word1 = etc1_word1[0];
 		blockData.word2 = etc1_word2[0];
 	}	
-	// some intersting debugs, note there is no relationship here so far, note also that compressing a decompressed image will find patterns
+	// some interesting debugs, note there is no relationship here so far, note also that compressing a decompressed image will find patterns
 	//possibly a planar < 100000 will be better compressed by an H than a T
 	//System.out.print(best_char);
 	//if(error_planar < 100000 && (error_thumbT < error_planar || error_thumbH < error_planar) )
@@ -8780,21 +8785,54 @@ void compressBlockETC2FastPerceptual(byte[] img, byte[] imgdec,int width,int hei
 	
 	
 	//Neural
+	 
+	
+	
+//	String mathsItout = ""; 
+		
+	
+
 	byte[] nnInput = new byte[16*4];
 	int idx = 0;
-	for (int y = 0; y < BLOCKHEIGHT; ++y) {
-		for (int x = 0; x < BLOCKWIDTH; ++x) {
-			//int r = img[3*((starty+y)*width+startx+x)+R];
-			//int g = img[3*((starty+y)*width+startx+x)+G];
-			//int b = img[3*((starty+y)*width+startx+x)+B];
-			nnInput [idx++] = (0 << 24);
-			nnInput [idx++] = (byte)(img [3 * ((starty + y) * width + startx + x) + R] << 16);
-			nnInput [idx++] = (byte)(img [3 * ((starty + y) * width + startx + x) + G] << 8);
-			nnInput [idx++] = (byte)(img [3 * ((starty + y) * width + startx + x) + B] << 0);
+	for (int y = 0; y < BLOCKHEIGHT; ++y) 
+	{
+//		mathsItout += "\ny="+y+"";
+		for (int x = 0; x < BLOCKWIDTH; ++x) 
+		{		
+			
+			
+			
+			nnInput[idx++] = (0 >> 24) ;
+			nnInput[idx++] = img[3*((starty+y)*width+startx+x)+R]; 
+			nnInput[idx++] = img[3*((starty+y)*width+startx+x)+G]; 
+			nnInput[idx++] = img[3*((starty+y)*width+startx+x)+B];	
+			
+/*			mathsItout += "\tx="+x+" ";
+			mathsItout += "idx="+idx+" ";
+			mathsItout += (0 >> 24)+" ";
+			mathsItout += (img[3*((starty+y)*width+startx+x)+R]&0xff)+" ";
+			mathsItout += (img[3*((starty+y)*width+startx+x)+G]&0xff)+" ";
+			mathsItout += (img[3*((starty+y)*width+startx+x)+B]&0xff)+"\n";
+			
+
+			
+			int math=0;
+			math += (img[3*((starty+y)*width+startx+x)+R]&0xff) << 16;
+			math += (img[3*((starty+y)*width+startx+x)+G]&0xff) << 8;
+			math += (img[3*((starty+y)*width+startx+x)+B]&0xff) << 0;
+			mathsItout +="\t" + math + "\n";*/
+			
 		}
 	}
+	
+//	System.out.println(mathsItout);
+ 
+	// luma values can be used to quick choose planar and etc1!
+	// bt T&H still need decision
+	//https://nahjaeho.github.io/papers/SA20/QUICKETC2_SA20_slides.pdf
+	
 		
-	analysisData.blockComplete(nnInput, best_mode.ordinal(),  NNBlockStyle.ETC2FastPerceptual);
+	analysisData.blockComplete(nnInput, best_mode.ordinal(),  NNBlockStyle.ETC2FastPerceptual, nnMode);
 	
 }
 
@@ -8875,6 +8913,7 @@ static void write_big_endian_4byte_word(int[] blockadr, ByteBuffer bb) throws IO
 //that it already is expanded to 16 bits.
 //Note also that it its contents will depend on the value of formatSigned.
 int[] valtab;// pointer to one of the below
+
 
 static int[] valtabsigned;
 static int[] valtabunsigned;
