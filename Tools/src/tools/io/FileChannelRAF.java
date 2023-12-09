@@ -150,6 +150,7 @@ public class FileChannelRAF implements IRandomAccessFile {
 
 	@Override
 	public void close() throws IOException {
+		fileChannel.force(true);
 		fileChannel.close();
 	}
 
