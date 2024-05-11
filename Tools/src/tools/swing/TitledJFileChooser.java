@@ -48,4 +48,16 @@ public class TitledJFileChooser extends JFileChooser
 		File sf = fc.getSelectedFile();
 		return sf;
 	}
+	
+	public static File requestFileName(String title, String defaultFolder, Component parent)
+	{
+		TitledJFileChooser fc = new TitledJFileChooser(defaultFolder);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		//fc.setCurrentDirectory(new File(defaultFolder));
+		fc.setDialogTitle(title);
+		fc.setApproveButtonText("Select");
+		fc.showOpenDialog(parent); // note MUST be open or mac osx gives odd result
+		File sf = fc.getSelectedFile();
+		return sf;
+	}
 }
