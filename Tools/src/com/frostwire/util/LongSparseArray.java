@@ -17,6 +17,8 @@
 package com.frostwire.util;
 
 /**
+ * NOTE this class is in the Android rt as https://developer.android.com/reference/android/util/ArrayMap
+ * 
  * SparseArray mapping longs to Objects, a version of the platform's
  * {@link android.util.LongSparseArray} that can be used on older versions of the
  * platform.  Unlike a normal array of Objects,

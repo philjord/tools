@@ -17,6 +17,9 @@ package com.frostwire.util;
  */
 
 /**
+ * 
+ *  NOTE this class is in the Android rt as https://developer.android.com/reference/android/util/ArrayMap
+ *  
  * SparseArrays map integers to Objects.  Unlike a normal array of Objects,
  * there can be gaps in the indices.  It is intended to be more memory efficient
  * than using a HashMap to map Integers to Objects, both because it avoids
