@@ -18,7 +18,7 @@ import java.nio.ByteOrder;
 import java.util.Objects;
 
 /**
- * Inflater.
+ * Inflater. From https://github.com/google/pjflate
  *
  * <p>The code is a pure Java port of Go's flate code
  * (https://golang.org/src/compress/flate/inflate.go).

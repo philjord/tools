@@ -16,6 +16,11 @@ package zipBB;
 import java.nio.ByteBuffer;
  
 
+//thoughts on bytebuffer speed
+//https://stackoverflow.com/questions/11174231/compare-direct-and-non-direct-bytebuffer-get-put-operations
+// this suggests well that non native order(which we are) getting Ints is slower than bytes
+// Note also the very cool Unsafe class for removing some JNI overhead
+
 class BitReader {
   /** Bits. {@code b & 0b11} takes the first two bits. */
   int b;
