@@ -13,6 +13,7 @@ import javax.swing.JToggleButton;
 public class DetailsFileChooser extends JFileChooser
 {
 	private Listener listener;
+	private JFrame fr = new JFrame();
 
 	public DetailsFileChooser(Listener l)
 	{
@@ -24,10 +25,8 @@ public class DetailsFileChooser extends JFileChooser
 		super(currentDirectoryPath);
 		this.listener = l;
 
-		setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-		JFrame fr = new JFrame();
-		fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);		
+		fr.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		fr.getContentPane().add(this);
 		fr.setVisible(true);
 		fr.setSize(350, 1000);
@@ -91,7 +90,9 @@ public class DetailsFileChooser extends JFileChooser
 			}
 		}
 	}
-
+	public void dispose() {
+		fr.dispose();
+    }
 	public static interface Listener
 	{
 		public void fileSelected(File file);
